@@ -6,6 +6,7 @@
 //
 // Licence: Auckland Council Open Data (CC BY 4.0).
 import "dotenv/config";
+import ws from "ws";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -23,7 +24,7 @@ const PAGE = 1000; // max 2000 per request; use 1000 to be safe
 let sb;
 if (!DRY) {
   const { createClient } = await import("@supabase/supabase-js");
-  sb = createClient(SB_URL, SB_KEY, { auth: { persistSession: false } });
+  sb = createClient(SB_URL, SB_KEY, { auth: { persistSession: false }, realtime: { transport: ws } });
 }
 
 async function ensureDataset() {

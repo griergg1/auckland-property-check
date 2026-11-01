@@ -61,13 +61,13 @@ export default function MapView({ parcelGeoJSON, evidenceGeoJSON, className }: P
           id: "parcel-outline",
           type: "line",
           source: "parcel",
-          paint: { "line-color": "#1d4ed8", "line-width": 2 },
+          paint: { "line-color": "#1C1A17", "line-width": 2 },
         });
         map.addLayer({
           id: "parcel-fill",
           type: "fill",
           source: "parcel",
-          paint: { "fill-color": "#1d4ed8", "fill-opacity": 0.1 },
+          paint: { "fill-color": "#1C1A17", "fill-opacity": 0.06 },
         });
       } else if (parcelGeoJSON) {
         (map.getSource("parcel") as maplibregl.GeoJSONSource).setData(parcelGeoJSON);
@@ -79,13 +79,13 @@ export default function MapView({ parcelGeoJSON, evidenceGeoJSON, className }: P
             id: "evidence-fill",
             type: "fill",
             source: "evidence",
-            paint: { "fill-color": "#dc2626", "fill-opacity": 0.45 },
+            paint: { "fill-color": "#7A5A3A", "fill-opacity": 0.35 },
           });
           map.addLayer({
             id: "evidence-line",
             type: "line",
             source: "evidence",
-            paint: { "line-color": "#dc2626", "line-width": 2 },
+            paint: { "line-color": "#7A5A3A", "line-width": 2 },
           });
         } else if (evidenceGeoJSON) {
           (map.getSource("evidence") as maplibregl.GeoJSONSource).setData(evidenceGeoJSON);

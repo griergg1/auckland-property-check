@@ -1,26 +1,112 @@
 @import "tailwindcss";
 
+/* morebeanz — design tokens
+   See docs/DESIGN.md. Warm paper-and-ink palette, hairlines, sharp corners. */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #F4F1EA;
+  --surface: #FBFAF6;
+  --ink: #1C1A17;
+  --ink-muted: #6B655B;
+  --hairline: #D9D3C5;
+  --accent: #7A5A3A;
+
+  /* status (earthy, never bright) */
+  --st-detected-ink: #8B3A2B;
+  --st-detected-wash: #F3E5DD;
+  --st-detected-line: #E2C9B8;
+  --st-clear-ink: #4A5D3A;
+  --st-clear-wash: #E8EBE0;
+  --st-clear-line: #C9D4BE;
+  --st-unavail-ink: #8A6D3F;
+  --st-unavail-wash: #F0E8D6;
+  --st-unavail-line: #D9C9A2;
+  --st-review-ink: #5A4A6B;
+  --st-review-wash: #ECE6F0;
+  --st-review-line: #D2C6DC;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-hairline: var(--hairline);
+  --color-accent: var(--accent);
+
+  --color-st-detected: var(--st-detected-ink);
+  --color-st-detected-wash: var(--st-detected-wash);
+  --color-st-detected-line: var(--st-detected-line);
+  --color-st-clear: var(--st-clear-ink);
+  --color-st-clear-wash: var(--st-clear-wash);
+  --color-st-clear-line: var(--st-clear-line);
+  --color-st-unavail: var(--st-unavail-ink);
+  --color-st-unavail-wash: var(--st-unavail-wash);
+  --color-st-unavail-line: var(--st-unavail-line);
+  --color-st-review: var(--st-review-ink);
+  --color-st-review-wash: var(--st-review-wash);
+  --color-st-review-line: var(--st-review-line);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-serif: var(--font-newsreader), Newsreader, Georgia, "Times New Roman", serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* sharp corners everywhere by default; opt into radius with rounded-* */
+* {
+  border-radius: 0 !important;
+}
+
+/* focus ring tuned for warm paper */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* mono label helper */
+.label {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.6875rem;
+  color: var(--ink-muted);
+}
+
+/* serif headline helper */
+.display {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+/* hairline divider */
+.rule {
+  border: 0;
+  border-top: 1px solid var(--hairline);
+}
+
+/* status stamp */
+.stamp {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.6875rem;
+  padding: 2px 6px;
+  border: 1px solid;
+  display: inline-block;
+}
+
+/* print niceties */
+@media print {
+  :focus-visible { outline: none; }
+  body { background: #fff; color: #000; }
 }

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>morebeanz — preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #F4F1EA;
+    --surface: #FBFAF6;
+    --ink: #1C1A17;
+    --ink-muted: #6B655B;
+    --hairline: #D9D3C5;
+    --accent: #7A5A3A;
+  }
+  * { box-sizing: border-box; border-radius: 0 !important; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: Inter, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  .label { font-family: 'JetBrains Mono', ui-monospace, monospace; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.6875rem; color: var(--ink-muted); }
+  .display { font-family: Newsreader, Georgia, serif; font-weight: 400; letter-spacing: -0.01em; line-height: 1.1; }
+  .rule { border: 0; border-top: 1px solid var(--hairline); }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1250px; margin: 0 auto; padding: 0 16px; }
+
+  /* announcement */
+  .announce { border-bottom: 1px solid var(--hairline); }
+  .announce p { text-align: center; padding: 8px 16px; margin: 0; }
+
+  /* header */
+  header { border-bottom: 1px solid var(--hairline); }
+  .head { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px; max-width: 1250px; margin: 0 auto; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .wm { font-size: 1.05rem; line-height: 1; }
+  nav { display: flex; gap: 24px; }
+
+  /* hero */
+  .hero { border-bottom: 1px solid var(--hairline); }
+  .hero-grid { max-width: 1250px; margin: 0 auto; display: grid; grid-template-columns: 1fr; }
+  @media (min-width: 768px) { .hero-grid { grid-template-columns: 1fr 1fr; } }
+  .hero-left { padding: 64px 24px; }
+  @media (min-width: 768px) { .hero-left { padding: 96px 40px; border-right: 1px solid var(--hairline); } }
+  .hero-left h1 { font-size: 2.25rem; margin: 16px 0 0; }
+  @media (min-width: 768px) { .hero-left h1 { font-size: 3rem; } }
+  .hero-left p.sub { margin: 20px 0 0; max-width: 28rem; font-size: 0.95rem; line-height: 1.6; color: var(--ink-muted); }
+  form { margin-top: 32px; max-width: 28rem; }
+  .field { display: flex; border: 1px solid var(--hairline); background: var(--surface); }
+  .field input { flex: 1; background: transparent; border: 0; padding: 12px; font-size: 0.95rem; font-family: inherit; color: var(--ink); outline: none; }
+  .field input::placeholder { color: var(--ink-muted); }
+  .field button { font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.12em; font-size: 0.6875rem; border-left: 1px solid var(--hairline); padding: 12px 20px; background: transparent; color: var(--ink); cursor: pointer; }
+  .field button:hover { background: var(--ink); color: var(--paper); }
+  .caveat { margin-top: 32px; }
+
+  .hero-right { min-height: 420px; background: var(--surface); display: none; }
+  @media (min-width: 768px) { .hero-right { display: block; } }
+  .hero-right svg { width: 100%; height: 100%; display: block; }
+
+  /* sections */
+  section.block { border-bottom: 1px solid var(--hairline); }
+  .block-inner { max-width: 1250px; margin: 0 auto; padding: 64px 16px; }
+  @media (min-width: 768px) { .block-inner { padding: 96px 16px; } }
+  .block h2 { font-size: 1.75rem; margin: 12px 0 0; }
+  @media (min-width: 768px) { .block h2 { font-size: 2rem; } }
+  .grid4 { margin-top: 40px; display: grid; grid-template-columns: 1fr; border: 1px solid var(--hairline); }
+  @media (min-width: 640px) { .grid4 { grid-template-columns: 1fr 1fr; } }
+  @media (min-width: 1024px) { .grid4 { grid-template-columns: repeat(4, 1fr); } }
+  .cell { padding: 24px; border: 1px solid var(--hairline); }
+  @media (min-width: 1024px) { .cell { border-left: 1px solid var(--hairline); } .cell:first-child { border-left: 0; } }
+  @media (max-width: 1023px) { .cell:nth-child(2n) { border-left: 1px solid var(--hairline); } }
+  .cell h3 { font-size: 1.15rem; margin: 12px 0 0; }
+  .cell p { margin: 8px 0 0; font-size: 0.9rem; line-height: 1.6; color: var(--ink-muted); }
+
+  /* footer */
+  footer { margin-top: auto; }
+  .foot { max-width: 1250px; margin: 0 auto; padding: 40px 16px; }
+  .foot-top { display: flex; flex-direction: column; gap: 24px; }
+  @media (min-width: 768px) { .foot-top { flex-direction: row; align-items: flex-end; justify-content: space-between; } }
+  .foot p.disc { max-width: 28rem; font-size: 0.8rem; line-height: 1.6; color: var(--ink-muted); margin: 0; }
+  hr.rule { margin: 32px 0 16px; }
+</style>
+</head>
+<body>
+
+<div class="announce"><p class="label">Preliminary research · Not a LIM · Sources cited</p></div>
+
+<header>
+  <div class="head">
+    <div class="brand">
+      <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+        <rect x="8" y="8" width="32" height="32" fill="none" stroke="#1C1A17" stroke-width="2"/>
+        <path d="M 14 34 Q 24 22 34 34" fill="none" stroke="#7A5A3A" stroke-width="2" stroke-linecap="round"/>
+        <path d="M 14 30 Q 24 20 34 30" fill="none" stroke="#7A5A3A" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+      </svg>
+      <span class="display wm">morebeanz</span>
+    </div>
+    <nav class="label">
+      <a href="#how">How it works</a>
+      <a href="#checks">What we check</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-left">
+      <p class="label">Research</p>
+      <h1 class="display">Understand a property before you pay to investigate it.</h1>
+      <p class="sub">Mapped hazards, planning, terrain and infrastructure — pulled from public Auckland sources, cited, and ordered by what you intend to do with the place.</p>
+      <form onsubmit="return false">
+        <label class="label" for="addr">Address</label>
+        <div class="field" style="margin-top:8px">
+          <input id="addr" type="text" placeholder="Enter an Auckland street address" />
+          <button type="submit">Check</button>
+        </div>
+      </form>
+      <p class="label caveat">Demo data · not a LIM</p>
+    </div>
+    <div class="hero-right">
+      <svg viewBox="0 0 600 480" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <rect width="600" height="480" fill="#FBFAF6"/>
+        <g fill="none" stroke="#7A5A3A" stroke-width="1" opacity="0.28" stroke-linecap="round">
+          <path d="M -40 360 Q 150 260 300 300 T 640 280"/>
+          <path d="M -40 330 Q 150 230 300 270 T 640 250"/>
+          <path d="M -40 300 Q 150 200 300 240 T 640 220"/>
+          <path d="M -40 270 Q 150 170 300 210 T 640 190"/>
+          <path d="M -40 240 Q 150 140 300 180 T 640 160"/>
+          <path d="M -40 210 Q 150 110 300 150 T 640 130"/>
+        </g>
+        <g fill="none" stroke="#1C1A17" stroke-width="1.5" opacity="0.55">
+          <path d="M 180 150 L 420 150 L 420 330 L 180 330 Z"/>
+        </g>
+        <g stroke="#1C1A17" stroke-width="1" opacity="0.4">
+          <path d="M 180 150 L 180 138 M 420 150 L 420 138"/>
+          <path d="M 180 330 L 180 342 M 420 330 L 420 342"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<section id="checks" class="block">
+  <div class="block-inner">
+    <p class="label">What we check</p>
+    <h2 class="display">Four layers, one report.</h2>
+    <div class="grid4">
+      <div class="cell">
+        <p class="label">Hazards</p>
+        <h3 class="display">Flood, overland flow, coastal</h3>
+        <p>Verified council hazard layers intersected with the full parcel — not the address point.</p>
+      </div>
+      <div class="cell">
+        <p class="label">Planning</p>
+        <h3 class="display">Zones and overlays</h3>
+        <p>Applicable Auckland Unitary Plan zones and selected overlays, with links to the rules.</p>
+      </div>
+      <div class="cell">
+        <p class="label">Terrain</p>
+        <h3 class="display">Approximate slope</h3>
+        <p>Slope indication where elevation data supports it. Stated as unavailable where it does not.</p>
+      </div>
+      <div class="cell">
+        <p class="label">Infrastructure</p>
+        <h3 class="display">Stormwater and more</h3>
+        <p>Selected mapped public infrastructure, starting with stormwater where available.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="how" class="block">
+  <div class="block-inner">
+    <p class="label">How it works</p>
+    <div class="grid4">
+      <div class="cell">
+        <p class="label">01</p>
+        <h3 class="display">Search</h3>
+        <p>Enter an Auckland street address.</p>
+      </div>
+      <div class="cell">
+        <p class="label">02</p>
+        <h3 class="display">Confirm parcel</h3>
+        <p>Pick the right parcel on the map.</p>
+      </div>
+      <div class="cell">
+        <p class="label">03</p>
+        <h3 class="display">Read findings</h3>
+        <p>Ordered by what you intend to do.</p>
+      </div>
+      <div class="cell">
+        <p class="label">04</p>
+        <h3 class="display">Compare &amp; export</h3>
+        <p>Shortlist side by side; print with sources.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <div class="foot-top">
+      <div>
+        <div class="brand">
+          <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+            <rect x="8" y="8" width="32" height="32" fill="none" stroke="#1C1A17" stroke-width="2"/>
+            <path d="M 14 34 Q 24 22 34 34" fill="none" stroke="#7A5A3A" stroke-width="2" stroke-linecap="round"/>
+            <path d="M 14 30 Q 24 20 34 30" fill="none" stroke="#7A5A3A" stroke-width="2" stroke-linecap="round" opacity="0.45"/>
+          </svg>
+          <span class="display wm">morebeanz</span>
+        </div>
+        <p class="label" style="margin-top:12px">Preliminary property research · Auckland</p>
+      </div>
+      <p class="disc">Demo fixtures only — not real assessments. Not a LIM, not ownership confirmation, not an approval guarantee. Every finding cites its source, dataset version, and retrieval date.</p>
+    </div>
+    <hr class="rule"/>
+    <p class="label">© morebeanz</p>
+  </div>
+</footer>
+
+</body>
+</html>
