@@ -15,6 +15,10 @@ export default function MapView({ parcelGeoJSON, evidenceGeoJSON, className }: P
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+    const linzApiKey = process.env.NEXT_PUBLIC_LINZ_API_KEY;
+    const linzTilesUrl = linzApiKey
+      ? `https://basemaps.linz.govt.nz/v1/aerial/{z}/{x}/{y}.webp?api=${linzApiKey}`
+      : "https://basemaps.linz.govt.nz/v1/aerial/{z}/{x}/{y}.webp";
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: {
@@ -22,9 +26,7 @@ export default function MapView({ parcelGeoJSON, evidenceGeoJSON, className }: P
         sources: {
           "linz-aerial": {
             type: "raster",
-            tiles: [
-              "https://basemaps.linz.govt.nz/v1/aerial/{z}/{x}/{y}.webp",
-            ],
+            tiles: [linzTilesUrl],
             tileSize: 256,
             attribution:
               '&copy; <a href="https://www.linz.govt.nz/data/linz-data-service">LINZ</a>',
@@ -92,16 +94,32 @@ export default function MapView({ parcelGeoJSON, evidenceGeoJSON, className }: P
       const bounds = new maplibregl.LngLatBounds();
       const extend = (g: GeoJSON.Feature) => {
         const geom = g.geometry;
-        if (geom && geom.type === "Polygon") {
-          geom.coordinates[0].forEach(([lng, lat]) => bounds.extend([lng, lat]));
+        if (!geom) return;
+        const collect = (coords: number[][]) =>
+          coords.forEach(([lng, lat]) => bounds.extend([lng, lat]));
+        if (geom.type === "Polygon") {
+          collect(geom.coordinates[0]);
+        } else if (geom.type === "MultiPolygon") {
+          geom.coordinates.forEach((poly) => collect(poly[0]));
+        } else if (geom.type === "GeometryCollection") {
+          geom.geometries.forEach((gg) => {
+            if (gg.type === "Polygon") collect(gg.coordinates[0]);
+            else if (gg.type === "MultiPolygon") gg.coordinates.forEach((p) => collect(p[0]));
+          });
         }
       };
       if (parcelGeoJSON) extend(parcelGeoJSON);
       if (evidenceGeoJSON) extend(evidenceGeoJSON);
       if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 60 });
     };
-    if (map.loaded()) addLayers();
-    else map.on("load", addLayers);
+    if (map.isStyleLoaded()) {
+      addLayers();
+    } else {
+      map.on("load", addLayers);
+    }
+    return () => {
+      map.off("load", addLayers);
+    };
   }, [parcelGeoJSON, evidenceGeoJSON]);
 
   return <div ref={containerRef} className={className ?? "h-96 w-full"} />;

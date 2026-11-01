@@ -9,21 +9,19 @@ const hasRealKey = key && !key.includes("replace-with");
 
 describe.skipIf(!url || !hasRealKey)("assess_overland_flow (live)", () => {
   it("returns detected for the demo parcel", { timeout: 30000 }, async () => {
-      const sb = createClient(url!, key!, {
-        auth: { persistSession: false },
-        realtime: { transport: ws as unknown as never },
-      });
-    const { data: parcel } = await sb
+    const sb = createClient(url!, key!, {
+      auth: { persistSession: false },
+      realtime: { transport: ws as unknown as never },
+    });
+    const { data: parcel, error: parcelErr } = await sb
       .from("parcels")
       .select("id")
       .eq("source_parcel_id", "demo-parcel-001")
       .single();
-    if (!parcel) {
-      console.warn("demo parcel not found — skipping live assertion");
-      return;
-    }
+    expect(parcelErr).toBeFalsy();
+    expect(parcel).toBeTruthy();
     const { data: result, error } = await sb.rpc("assess_overland_flow", {
-      p_parcel_id: parcel.id,
+      p_parcel_id: parcel!.id,
       p_intention: "extend",
     });
     expect(error).toBeFalsy();

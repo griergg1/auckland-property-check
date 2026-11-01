@@ -53,21 +53,30 @@ function ConfirmContent() {
     })();
   }, [addressId]);
 
+  const [submitting, setSubmitting] = useState(false);
+
   async function confirmAndRun() {
-    const res = await fetch("/api/assessment/run", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        parcelIds: candidates.map((c) => c.id),
-        intention,
-      }),
-    });
-    if (!res.ok) {
-      setError("assessment failed");
-      return;
+    if (submitting || !parcel) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/assessment/run", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          parcelIds: [parcel.id],
+          intention,
+        }),
+      });
+      if (!res.ok) {
+        setError("assessment failed");
+        return;
+      }
+      const data = await res.json();
+      router.push(`/property/${data.runId}/report`);
+    } finally {
+      setSubmitting(false);
     }
-    const data = await res.json();
-    router.push(`/property/${data.runId}/report`);
   }
 
   const parcel = candidates[0];
@@ -117,9 +126,10 @@ function ConfirmContent() {
             </select>
             <button
               onClick={confirmAndRun}
-              className="mt-4 w-full rounded bg-blue-700 px-4 py-2 text-white"
+              disabled={submitting}
+              className="mt-4 w-full rounded bg-blue-700 px-4 py-2 text-white disabled:opacity-50"
             >
-              Confirm and run checks
+              {submitting ? "Running checks…" : "Confirm and run checks"}
             </button>
             <p className="mt-3 text-xs text-neutral-500">
               Demo fixtures only. Not a LIM. Address-to-parcel match is not ownership confirmation.

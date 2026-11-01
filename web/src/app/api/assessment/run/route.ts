@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   const findings = [];
   for (const parcelId of parcelIds) {
     const finding = await runAssessmentForParcel(parcelId, intention);
-    const { data: inserted } = await sb
+    const { data: inserted, error: insertErr } = await sb
       .from("findings")
       .insert({
         run_id: run.id,
@@ -60,13 +60,25 @@ export async function POST(request: Request) {
       })
       .select("id")
       .single();
-    findings.push({ ...finding, id: inserted?.id ?? "" });
+    if (insertErr || !inserted) {
+      // Persistence failure: fail the run rather than report a finding with no id.
+      await sb.from("assessment_runs").delete().eq("id", run.id);
+      return NextResponse.json(
+        { error: insertErr?.message ?? "failed to persist finding" },
+        { status: 500 },
+      );
+    }
+    findings.push({ ...finding, id: inserted.id });
   }
 
-  await sb
+  const { error: completeErr } = await sb
     .from("assessment_runs")
     .update({ completed_at: new Date().toISOString() })
     .eq("id", run.id);
+  if (completeErr) {
+    await sb.from("assessment_runs").delete().eq("id", run.id);
+    return NextResponse.json({ error: completeErr.message }, { status: 500 });
+  }
 
   return NextResponse.json(
     AssessmentRunResponse.parse({

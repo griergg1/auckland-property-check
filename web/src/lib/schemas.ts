@@ -52,7 +52,13 @@ export const ParcelCandidatesResponse = z.object({
 });
 
 export const AssessmentRunRequest = z.object({
-  parcelIds: z.array(z.string().uuid()).min(1),
+  parcelIds: z
+    .array(z.string().uuid())
+    .min(1)
+    .max(10)
+    .refine((ids) => new Set(ids).size === ids.length, {
+      message: "parcelIds must be unique",
+    }),
   intention: BuyerIntention.default("live"),
 });
 
