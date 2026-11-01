@@ -3,7 +3,7 @@ import {
   ParcelCandidatesRequest,
   ParcelCandidatesResponse,
 } from "@/lib/schemas";
-import { supabaseService } from "@/lib/supabase/server";
+import { supabaseServer } from "@/lib/supabase/server";
 
 // PoC: map demo address ids to the demo parcel. Real implementation will
 // resolve address -> candidate parcels via LINZ address-parcel links.
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   if (!body.success) {
     return NextResponse.json({ error: "invalid request" }, { status: 400 });
   }
-  const sb = supabaseService();
+  const sb = await supabaseServer();
   const sourceParcelId = DEMO_ADDRESS_TO_PARCEL[body.data.addressId];
   if (!sourceParcelId) {
     return NextResponse.json(

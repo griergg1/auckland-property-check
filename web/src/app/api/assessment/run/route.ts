@@ -3,7 +3,7 @@ import {
   AssessmentRunRequest,
   AssessmentRunResponse,
 } from "@/lib/schemas";
-import { supabaseService } from "@/lib/supabase/server";
+import { supabaseServer } from "@/lib/supabase/server";
 import { runAssessmentForParcel, RULE_VERSION } from "@/lib/assessment";
 
 export async function POST(request: Request) {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid request" }, { status: 400 });
   }
   const { parcelIds, intention } = body.data;
-  const sb = supabaseService();
+  const sb = await supabaseServer();
 
   // Fetch active dataset version ids for traceability
   const { data: versions } = await sb
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
   // Run checks for each parcel
   const findings = [];
   for (const parcelId of parcelIds) {
-    const finding = await runAssessmentForParcel(parcelId, intention);
+    const finding = await runAssessmentForParcel(sb, parcelId, intention);
     const { data: inserted, error: insertErr } = await sb
       .from("findings")
       .insert({

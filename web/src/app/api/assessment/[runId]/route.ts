@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { supabaseService } from "@/lib/supabase/server";
+import { supabaseServer } from "@/lib/supabase/server";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ runId: string }> },
 ) {
   const { runId } = await params;
-  const sb = supabaseService();
+  const sb = await supabaseServer();
 
   const { data: run, error: runErr } = await sb
     .from("assessment_runs")

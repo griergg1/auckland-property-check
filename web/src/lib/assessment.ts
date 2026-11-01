@@ -1,4 +1,4 @@
-import { supabaseService } from "./supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Finding, BuyerIntention } from "./schemas";
 
 export const RULE_VERSION = "rules.v1";
@@ -20,10 +20,10 @@ export type RawFindingRow = {
 };
 
 export async function runAssessmentForParcel(
+  sb: SupabaseClient,
   parcelId: string,
   intention: BuyerIntention,
 ): Promise<Finding> {
-  const sb = supabaseService();
   const { data, error } = await sb.rpc("assess_overland_flow", {
     p_parcel_id: parcelId,
     p_intention: intention,
