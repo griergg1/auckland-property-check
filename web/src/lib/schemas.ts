@@ -43,7 +43,7 @@ export const ParcelCandidate = z.object({
 });
 
 export const ParcelCandidatesRequest = z.object({
-  addressId: z.string().uuid(),
+  addressId: z.string().min(5),
 });
 
 export const ParcelCandidatesResponse = z.object({

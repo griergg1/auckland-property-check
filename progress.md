@@ -161,32 +161,27 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 ---
 
-## 2026-11-01 — PoC scaffold + Supabase + CodeRabbit
+## 2026-11-01 — Real data import + live address search
 
-**Goal:** Build the Phase 0.5 PoC (search → confirm → report) end to end.
+**Goal:** Replace demo fixtures with real LINZ parcels + Auckland Council overland flow data; live address search.
 
 **Done:**
-- Scaffolded Next.js 16 (App Router, TS, Tailwind) into `web/`
-- Installed deps: @supabase/supabase-js, @supabase/ssr, maplibre-gl, zod; dev: vitest, @turf/turf, ws, dotenv
-- Supabase migrations applied to `nwltvcqnflsezmthcfuu`:
-  - `core_schema` (datasets, dataset_versions, parcels, assessment_runs, findings + enums)
-  - `hazard_features_and_demo_seed` (hazard_features table + demo datasets/versions)
-  - demo parcel + rear-of-section overland flow fixture (address point outside hazard, parcel intersects)
-  - `assess_overland_flow` PostGIS function (rules.v1, four states)
-  - `parcel_geojson_4326` helper function
-- App code: supabase clients, Zod schemas, assessment module, 3 API routes + GET [runId], 3 screens (search/confirm/report), MapView (MapLibre + LINZ basemap)
-- Vitest: rear-hazard geometry test (3 passing); live integration test (skipped without service role key)
-- CodeRabbit review (8 findings): fixed 7, skipped 1 (next.config Tailwind/Next 16 config — build passes, valid)
+- Imported **461,632 real Auckland parcels** (LINZ NZ Primary Parcels, Auckland clip) into `public.parcels`.
+- Imported **1,176,253 Auckland Council overland flow features** (ArcGIS REST, CC BY 4.0) into `public.hazard_features`.
+- DB size: 1.26 GB (within 8 GB Pro disk).
+- Switched `/api/address/search` to live LINZ NZ Addresses WFS (layer 123113, new July 2026 schema).
+- Switched `/api/parcel/candidates` to find real parcels containing the address point (`parcels_containing_point` PostGIS function).
+- Updated `assess_overland_flow` to use real dataset slug `ac-overland-flow-paths` (with demo fallback); fixed `v_parcel` type to generic Geometry for MultiPolygon parcels.
+- Live end-to-end smoke test: "17 Shanaway Rise, Hillcrest" → real parcel (5039937, 1163 m²) → `detected` with real overland flow path intersection evidence.
 
-**Verified:** lint ✅ / typecheck ✅ / test ✅ (3 pass, 1 skip) / build ✅ / CodeRabbit ✅ / committed ✅ / pushed ✅
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (4 pass) / build ✅ / committed ✅ / pushed ✅
 
-**Next:** Add service role key to `web/.env.local` from dashboard; deploy to Vercel and wire `morebeanz.com` domain; smoke test dev server end to end.
+**Next:** Deploy real-data build to Vercel; wire `morebeanz.com` DNS; add more checks (flood prone, planning zone).
 
 **Notes:**
-- `.env.local` has anon key (publishable, safe); service role key is a placeholder — add from [Settings → API](https://supabase.com/dashboard/project/nwltvcqnflsezmthcfuu/settings/api) before running the integration test or local dev server.
-- Repo: https://github.com/griergg1/auckland-property-check (public, `main` pushed).
-- Domain `morebeanz.com` noted for Vercel deployment later.
-- Demo fixtures clearly labelled in UI; not real assessments.
+- LINZ API key in `.env.local` + Vercel (encrypted).
+- Service role key in `.env.local` (set by user).
+- `morebeanz.com` DNS still pending (A → 216.198.79.1 + 64.29.17.1; CNAME www → cname.vercel-dns.com.).
 
 **Notes:**
 - **Repurpose Supabase project** (same ref `fzrndnyzqqboqcaelgoz`) for Auckland Property — avoids a 5th Supabase project charge.
