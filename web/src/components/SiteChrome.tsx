@@ -71,9 +71,9 @@ export function SiteFooter() {
             <p className="label mt-3">Preliminary property research · Auckland</p>
           </div>
           <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
-            Demo fixtures only — not real assessments. Not a LIM, not ownership confirmation,
-            not an approval guarantee. Every finding cites its source, dataset version, and
-            retrieval date.
+            Public Auckland map data. Not a LIM, not ownership confirmation, not an
+            approval guarantee. Overland flow is the live check; other layers are not
+            assessed yet.
           </p>
         </div>
         <hr className="rule mt-8" />

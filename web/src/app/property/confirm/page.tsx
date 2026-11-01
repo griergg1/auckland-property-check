@@ -181,7 +181,7 @@ function ConfirmContent() {
               </button>
 
               <p className="label mt-4">
-                Demo fixtures · not a LIM
+                Not a LIM · confirm the parcel shown before the check runs
               </p>
             </div>
           </div>

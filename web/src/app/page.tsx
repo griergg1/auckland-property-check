@@ -7,30 +7,30 @@ type Candidate = { id: string; label: string };
 
 const CHECKS = [
   {
-    label: "Hazards",
-    title: "Flood, overland flow, coastal",
-    body: "Verified council hazard layers intersected with the full parcel — not the address point.",
+    label: "Hazards · live",
+    title: "Overland flow",
+    body: "Auckland Council overland flow paths, intersected with the full parcel. Flood-prone areas and coastal hazards are not in this check yet.",
   },
   {
-    label: "Planning",
+    label: "Planning · planned",
     title: "Zones and overlays",
-    body: "Applicable Auckland Unitary Plan zones and selected overlays, with links to the rules.",
+    body: "Auckland Unitary Plan zones are not assessed yet. Until that layer is imported, the report will not treat a property as clear.",
   },
   {
-    label: "Terrain",
+    label: "Terrain · planned",
     title: "Approximate slope",
-    body: "Slope indication where elevation data supports it. Stated as unavailable where it does not.",
+    body: "Not assessed yet. Missing elevation data will be reported as unavailable, not as flat or clear.",
   },
   {
-    label: "Infrastructure",
+    label: "Infrastructure · planned",
     title: "Stormwater and more",
-    body: "Selected mapped public infrastructure, starting with stormwater where available.",
+    body: "Not assessed yet. Mapped public infrastructure will be added only after each layer is verified.",
   },
 ];
 
 const STEPS = [
   { n: "01", title: "Search", body: "Enter an Auckland street address." },
-  { n: "02", title: "Confirm parcel", body: "Pick the right parcel on the map." },
+  { n: "02", title: "Confirm parcel", body: "Check the matched parcel on the map before the check runs." },
   { n: "03", title: "Read findings", body: "Ordered by what you intend to do." },
   { n: "04", title: "Compare & export", body: "Shortlist side by side; print with sources." },
 ];
@@ -41,6 +41,7 @@ export default function SearchPage() {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searched, setSearched] = useState(false);
 
   async function search(e: React.FormEvent) {
     e.preventDefault();
@@ -56,6 +57,7 @@ export default function SearchPage() {
       if (!res.ok) throw new Error("search failed");
       const data = await res.json();
       setCandidates(data.candidates ?? []);
+      setSearched(true);
     } catch (err: any) {
       setError(err.message ?? "search error");
     } finally {
@@ -96,8 +98,8 @@ export default function SearchPage() {
               Understand a property before you pay to investigate it.
             </h1>
             <p className="mt-5 max-w-md text-[0.95rem] leading-relaxed text-ink-muted">
-              Mapped hazards, planning, terrain and infrastructure — pulled from public
-              Auckland sources, cited, and ordered by what you intend to do with the place.
+              Public Auckland sources, cited, and ordered by what you intend to do
+              with the place. Overland flow is live; other checks are still being added.
             </p>
 
             <form onSubmit={search} className="mt-8 max-w-md">
@@ -109,7 +111,10 @@ export default function SearchPage() {
                   id="addr"
                   type="text"
                   value={q}
-                  onChange={(e) => setQ(e.target.value)}
+                  onChange={(e) => {
+                    setQ(e.target.value);
+                    setSearched(false);
+                  }}
                   placeholder="Enter an Auckland street address"
                   className="flex-1 bg-transparent px-3 py-3 text-[0.95rem] placeholder:text-ink-muted focus:outline-none"
                 />
@@ -139,13 +144,13 @@ export default function SearchPage() {
                 ))}
               </ul>
             )}
-            {candidates.length === 0 && !loading && q.length > 0 && (
+            {searched && candidates.length === 0 && !loading && !error && (
               <p className="mt-3 text-sm text-ink-muted">
-                No demo addresses match. Try &ldquo;Shanaway&rdquo; or &ldquo;Hobsonville&rdquo;.
+                No Auckland addresses matched. Try a street name or a fuller address.
               </p>
             )}
 
-            <p className="label mt-8">Demo data · not a LIM</p>
+            <p className="label mt-8">Not a LIM</p>
           </div>
 
           {/* right: topographic backdrop */}
@@ -216,9 +221,9 @@ export default function SearchPage() {
               <p className="label mt-3">Preliminary property research · Auckland</p>
             </div>
             <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
-              Demo fixtures only — not real assessments. Not a LIM, not ownership confirmation,
-              not an approval guarantee. Every finding cites its source, dataset version, and
-              retrieval date.
+              Public Auckland map data. Not a LIM, not ownership confirmation, not an
+              approval guarantee. Overland flow is the live check; other layers are not
+              assessed yet.
             </p>
           </div>
           <hr className="rule mt-8" />

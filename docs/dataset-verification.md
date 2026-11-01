@@ -26,7 +26,7 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Licence | LINZ Data Service Licence (CC BY 4.0 for this dataset) |
 | Attribution | "Contains data sourced from the LINZ Data Service and licensed for reuse under CC BY 4.0." |
 | Update cadence | Weekly (LDS property data updated weekly) |
-| Status | `access-check` — needs LINZ API key + licence confirmation before import |
+| Status | `verified` — Auckland clip imported (461,632 parcels) |
 | Notes | ~2.7M polygons nationally; Auckland clip keeps storage manageable. Use Changeset API for incremental updates. |
 
 ## LINZ — NZ Addresses
@@ -36,14 +36,14 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Slug | `linz-nz-addresses` |
 | Source org | LINZ |
 | Layer | NZ Addresses |
-| Layer ID | 105688 (current schema; note March 2026 schema migration) |
+| Layer ID | 123113 (NZ Addresses current schema, July 2026; layer-105688 retired) |
 | Access method | WFS 2.0 with API key |
-| Endpoint | `https://data.linz.govt.nz/services;key={LINZ_API_KEY}/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=layer-105688&outputformat=json` |
+| Endpoint | `https://data.linz.govt.nz/services;key={LINZ_API_KEY}/wfs?service=WFS&version=2.0.0&request=GetFeature&typeNames=layer-123113&outputformat=json` |
 | Licence | LINZ Data Service Licence (CC BY 4.0) |
 | Attribution | "Contains data sourced from the LINZ Data Service and licensed for reuse under CC BY 4.0." |
 | Update cadence | Weekly |
-| Status | `access-check` — schema migration March 2026; wrap fields in adapter |
-| Notes | Used for address search → address-to-parcel resolution. May use live WFS query for search instead of bulk import. |
+| Status | `verified` — live search only; not bulk-imported |
+| Notes | Search uses `full_address` / `full_road_name` inside an Auckland bbox. A non-OK WFS response is an error, not an empty result. |
 
 ## LINZ Basemaps (aerial imagery)
 
@@ -66,7 +66,7 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Source org | Auckland Council |
 | Layer | Overland Flow Paths |
 | Source modified | 2026-03-24 |
-| Data type | Polygon (line features stored as polygons) |
+| Data type | LineString (stored as generic geometry, SRID 2193) |
 | CRS | NZTM2000 (EPSG:2193) |
 | Access method | ArcGIS REST FeatureServer |
 | Endpoint | `https://services1.arcgis.com/n4yPwebTjJCmXB6W/ArcGIS/rest/services/Overland_Flow_Paths/FeatureServer/0` |
@@ -74,8 +74,8 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Licence | Auckland Council Open Data — CC BY 4.0 |
 | Attribution | "Auckland Council Open Data — Overland Flow Paths" |
 | Update cadence | As updated; Geomaps current is the live source (PC120 viewer is frozen) |
-| Status | `verified` — licence + endpoint confirmed; import planned |
-| Notes | Re-mapped 2019 using LiDAR DEM. Max record count 2000 per request → paginate. Used for the `hazard.overland_flow` check. |
+| Status | `verified` — imported (1,176,253 features) |
+| Notes | Re-mapped 2019 using LiDAR DEM. Max record count 2000 per request → paginate. GeoJSON responses put attributes on `properties`, not `attributes`. Used for the `hazard.overland_flow` check. Existing rows may have an empty `source_feature_id` from the first import. |
 
 ## Auckland Council — Flood Prone Areas (next candidate)
 

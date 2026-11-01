@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       ruleVersion: RULE_VERSION,
       datasetVersionIds,
       findings,
-      isDemo: true,
+      isDemo: false,
     }),
   );
 }

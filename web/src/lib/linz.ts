@@ -27,7 +27,9 @@ export async function searchAddresses(query: string): Promise<LinzAddress[]> {
   const like = q.toUpperCase().replace(/'/g, "''");
   const cql = `bbox(shape,${AUCKLAND_BBOX}) AND (full_address ILIKE '%${like}%' OR full_road_name ILIKE '%${like}%')`;
   const res = await fetch(wfsUrl(cql, 20));
-  if (!res.ok) return [];
+  if (!res.ok) {
+    throw new Error(`LINZ address search failed (${res.status})`);
+  }
   const data = await res.json() as any;
   const features = data.features ?? [];
   return features.map((f: any) => {

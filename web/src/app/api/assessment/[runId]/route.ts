@@ -58,6 +58,6 @@ export async function GET(
     datasetVersionIds: run.dataset_version_ids ?? [],
     findings,
     parcelGeometries,
-    isDemo: true,
+    isDemo: false,
   });
 }

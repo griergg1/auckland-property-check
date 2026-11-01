@@ -4,7 +4,7 @@ Living record of what was done, what’s next, and **session rituals** so work s
 
 **Related docs:** [docs/BRIEF.md](docs/BRIEF.md) · [docs/TECH.md](docs/TECH.md) · [docs/MARKET_RESEARCH.md](docs/MARKET_RESEARCH.md) · Plan: `.cursor/plans/` or team copy of implementation plan
 
-**Current target phase:** Phase 0.5 PoC (not started)
+**Current target phase:** Phase 0.5 PoC — live on Vercel with real parcels + overland flow. Custom domain DNS still pending.
 
 ---
 
@@ -130,6 +130,38 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-01 — Closeout (real-data PoC)
+
+**Goal:** Close the session cleanly so the next one can start from a pushed, reviewed tree.
+
+**Done:**
+- Lint, typecheck, and Vitest passed (4 tests, including the live overland-flow RPC).
+- CodeRabbit review of commits since `9ce9f1f` (11 findings). Fixed the honesty issues; deferred the rest below.
+- LINZ address search now throws on a non-OK response instead of returning no matches.
+- Home, confirm, report, and footer copy no longer call the live data “demo fixtures”. The home checks list marks overland flow as live and planning, terrain, and infrastructure as planned.
+- Empty address search message appears only after a completed search with no matches.
+- Assessment run and report responses set `isDemo: false`.
+- Parcel geometry is parsed when the RPC returns a GeoJSON string.
+- Overland-flow import reads `properties` (GeoJSON) as well as `attributes`.
+- Dataset ledger updated: parcels imported, addresses layer `123113`, overland flow imported.
+
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (4 pass) / CodeRabbit ✅ (findings triaged) / secrets not in git (`.env.local` ignored) / pushed ✅
+
+**Next:** Point `morebeanz.com` DNS (A `216.198.79.1` and `64.29.17.1`; `www` CNAME `cname.vercel-dns.com`). Then let the visitor choose when `parcels_containing_point` returns more than one parcel.
+
+**Notes (CodeRabbit, deferred):**
+- Confirm still submits `candidates[0]`. Multi-parcel choice is the next product change, not a silent failure.
+- Overland-flow import still marks the dataset version active before the pages finish. The current import already completed (1,176,253 features). The next import should insert as draft and promote only after the last page succeeds. Existing `source_feature_id` values may be empty from the first import.
+- `.label` color can override `text-paper` on buttons. Visual only; left as-is.
+- Assessment routes already use the anon client. The integration test uses the service role to look up the demo parcel. No RLS change in this closeout.
+- Several `dataset_versions` rows are still `active` from repeated import attempts.
+- `morebeanz.com` DNS is not pointed yet.
+
+**Notes:**
+- LINZ API key and service role key stay in `web/.env.local` only. Service role is not required on Vercel.
+
+---
+
 ## 2026-11-01 — Project setup (docs only)
 
 **Goal:** Capture briefs, tech stack, market research, PoC scope, and session rituals.
@@ -183,24 +215,23 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 - Service role key in `.env.local` (set by user).
 - `morebeanz.com` DNS still pending (A → 216.198.79.1 + 64.29.17.1; CNAME www → cname.vercel-dns.com.).
 
-**Notes:**
-- **Repurpose Supabase project** (same ref `fzrndnyzqqboqcaelgoz`) for Auckland Property — avoids a 5th Supabase project charge.
-- **Vercel delete (you confirm):** [Delete godrinkfree project in Vercel settings](https://vercel.com/d?to=%2Fgriergg1s-projects%2Fgodrinkfree%2Fsettings%2Fgeneral%23delete-project&title=Review+in+Vercel)
-- Supabase project **pause/delete** full project: only via [Supabase dashboard](https://supabase.com/dashboard/project/fzrndnyzqqboqcaelgoz/settings/general) if you prefer a net-new project later (not recommended for billing).
-
 ---
 
 ## Backlog (high level)
 
 Use plan todos for detail; this is a short pointer list.
 
-- [ ] Scaffold Next.js (App Router, TS, Tailwind, pinned deps)
-- [ ] Supabase + PostGIS migrations (datasets, parcels, runs, findings)
-- [ ] LINZ Auckland parcel/address path
-- [ ] One verified Auckland Council layer + PostGIS check
-- [ ] PoC UI: search → confirm → report
-- [ ] Vitest: rear-of-section intersection case
-- [ ] CodeRabbit + git push in every closeout once code exists
+- [x] Scaffold Next.js (App Router, TS, Tailwind, pinned deps)
+- [x] Supabase + PostGIS migrations (datasets, parcels, runs, findings)
+- [x] LINZ Auckland parcel/address path
+- [x] One verified Auckland Council layer + PostGIS check
+- [x] PoC UI: search → confirm → report
+- [x] Vitest: rear-of-section intersection case
+- [x] CodeRabbit + git push in every closeout once code exists
+- [ ] `morebeanz.com` DNS
+- [ ] Choose among multiple parcel candidates
+- [ ] Next datasets: flood prone areas, unitary plan zone
+- [ ] Import versions stay draft until the import finishes
 
 ---
 

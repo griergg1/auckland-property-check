@@ -3,6 +3,18 @@ import { ParcelCandidatesRequest, ParcelCandidatesResponse } from "@/lib/schemas
 import { supabaseServer } from "@/lib/supabase/server";
 import { decodeAddressId } from "@/lib/linz";
 
+function parseGeoJson(value: unknown) {
+  if (value == null) return null;
+  if (typeof value === "string") {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return null;
+    }
+  }
+  return value;
+}
+
 export async function POST(request: Request) {
   const body = ParcelCandidatesRequest.safeParse(await request.json());
   if (!body.success) {
@@ -25,7 +37,7 @@ export async function POST(request: Request) {
     sourceParcelId: p.source_parcel_id,
     intent: p.intent,
     areaM2: p.area_m2 ? Number(p.area_m2) : null,
-    geometry: p.geom_geojson ?? null,
+    geometry: parseGeoJson(p.geom_geojson),
     isDemo: false,
   }));
   return NextResponse.json(

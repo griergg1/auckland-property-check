@@ -204,7 +204,7 @@ function ReportContent() {
         )}
 
         <p className="label mt-10">
-          Demo fixtures · not a LIM · not ownership confirmation · not an approval guarantee
+          Public map data · not a LIM · not ownership confirmation · not an approval guarantee
         </p>
       </main>
 

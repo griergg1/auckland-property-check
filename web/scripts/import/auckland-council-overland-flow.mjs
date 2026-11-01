@@ -69,18 +69,21 @@ while (true) {
   if (DRY) {
     total += features.length;
     if (total <= 3 && features[0]) {
-      const a = features[0].attributes || {};
+      const a = features[0].properties || features[0].attributes || {};
       console.log(`sample: OBJECTID=${a.OBJECTID} attributes=${JSON.stringify(a).slice(0, 120)}`);
     }
   } else {
-    const rows = features.map((f) => ({
-      dataset_slug: "ac-overland-flow-paths",
-      source_feature_id: String(f.attributes?.OBJECTID ?? ""),
-      scenario: "Overland flow path",
-      attributes: f.attributes ?? {},
-      geom_geojson: JSON.stringify(f.geometry),
-      dataset_version_id: versionId,
-    }));
+    const rows = features.map((f) => {
+      const props = f.properties ?? f.attributes ?? {};
+      return {
+        dataset_slug: "ac-overland-flow-paths",
+        source_feature_id: String(props.OBJECTID ?? ""),
+        scenario: "Overland flow path",
+        attributes: props,
+        geom_geojson: JSON.stringify(f.geometry),
+        dataset_version_id: versionId,
+      };
+    });
     const { error } = await sb.rpc("insert_hazard_geojson", { p_rows: rows });
     if (error) { console.error("insert error:", error.message); process.exit(2); }
     total += rows.length;
