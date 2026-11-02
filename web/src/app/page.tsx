@@ -8,41 +8,41 @@ type Candidate = { id: string; label: string };
 const CHECKS = [
   {
     label: "Live now",
+    title: "Value & rates",
+    body: "The council rating valuation (CV, land value, improvement value) and the annual council rates, pulled live from Auckland Council's public rates search and shown on the report header.",
+  },
+  {
+    label: "Live now",
+    title: "School zones",
+    body: "The primary, intermediate, and secondary enrolment home zones that contain the property, from the Ministry of Education. The Equity Index join is still being wired.",
+  },
+  {
+    label: "Live now",
     title: "Flood & coastal",
-    body: "Council flood maps — overland flow paths, flood-prone areas, and coastal storm-tide — matched to your section, not the street.",
+    body: "Council flood maps — overland flow paths, flood-prone areas, and coastal storm-tide — matched to your property, not the street.",
   },
   {
     label: "Live now",
     title: "What you can build",
-    body: "The Unitary Plan zone for the section, named in plain English, with a link to the exact rule chapter. Overlays and precincts are still being added.",
-  },
-  {
-    label: "Coming",
-    title: "Slope",
-    body: "Not yet. When the elevation data is missing, we'll say so — we won't call a section flat just because we couldn't check.",
-  },
-  {
-    label: "Coming",
-    title: "Stormwater & more",
-    body: "Not yet. We'll add mapped public infrastructure only after we've checked each layer is fit to use.",
+    body: "The Unitary Plan zone for the property, named in plain English, with a link to the exact rule chapter. Overlays and precincts are still being added.",
   },
 ];
 
 const AUDIENCES = [
   {
     label: "First-home buyer",
-    title: "Is this section going to flood?",
-    body: "The flood and coastal lines on the council maps, matched to the actual section — so you know what to ask the agent before you offer.",
+    title: "What's it worth, and what are the schools?",
+    body: "The council rating valuation, the annual rates, and the school enrolment zones come first — the value and the neighbourhood, not just the flood lines.",
   },
   {
     label: "Renovator",
     title: "Can I alter, and what are the limits?",
-    body: "The zone check names what's permitted on the section and links to the rule chapter. Overlays and precincts are still being added.",
+    body: "The zone check names what's permitted on the property and links to the rule chapter. Overlays and precincts are still being added.",
   },
   {
     label: "Extender",
-    title: "Where on the section can I build out?",
-    body: "Flood paths and ponding areas are matched to the section, so the extension's position and drainage questions are concrete, not a guess.",
+    title: "Where on the property can I build out?",
+    body: "Flood paths and ponding areas are matched to the property, so the extension's position and drainage questions are concrete, not a guess.",
   },
   {
     label: "Adding a dwelling",
@@ -59,8 +59,8 @@ const AUDIENCES = [
 const DIFFERENTIATORS = [
   {
     n: "01",
-    title: "We check the section, not the street.",
-    body: "Every flood and planning line is matched to the actual land parcel — not a 500 m circle around the address. The finding is about your section, not your neighbourhood.",
+    title: "We check the property, not the street.",
+    body: "Every flood and planning line is matched to the actual land parcel — not a 500 m circle around the address. The finding is about your property, not your neighbourhood.",
   },
   {
     n: "02",
@@ -70,7 +70,7 @@ const DIFFERENTIATORS = [
   {
     n: "03",
     title: "We don't say \"all clear\" when we don't know.",
-    body: "Every finding is one of four things: yes, no, we couldn't tell, or it needs a human to look. If the map's missing, we say so — we never call a section safe just because the map was blank.",
+    body: "Every finding is one of four things: yes, no, we couldn't tell, or it needs a human to look. If the map's missing, we say so — we never call a property safe just because the map was blank.",
   },
   {
     n: "04",
@@ -102,8 +102,8 @@ const JOURNEY = [
   },
   {
     n: "02",
-    title: "Confirm the section",
-    body: "If more than one section contains the address, you pick the right one. The check runs on the section you pick — not on the address dot.",
+    title: "Confirm the property",
+    body: "If more than one property contains the address, you pick the right one. The check runs on the property you pick — not on the address dot.",
   },
   {
     n: "03",
@@ -178,16 +178,17 @@ export default function SearchPage() {
         <div className="mx-auto grid max-w-[1250px] grid-cols-1 md:grid-cols-2">
           {/* left: text + search */}
           <div className="border-hairline px-6 py-16 md:border-r md:px-10 md:py-24">
-            <p className="label">Auckland property check</p>
+            <p className="label">Auckland property report</p>
             <h1 className="display mt-4 text-[2.25rem] md:text-[3rem]">
-              Know what&apos;s on the section before you pay for the LIM.
+              Know what a property is worth and what&apos;s on it before you pay for the LIM.
             </h1>
             <p className="mt-5 max-w-md text-[0.95rem] leading-relaxed text-ink-muted">
-              Type an Auckland address, confirm the right section, and read what
-              the council maps say about it — flood, coastal, and what you can
-              build — in plain English, with the source link next to every line.
-              Built for first-home buyers, renovators, extenders, and people
-              adding a dwelling. Free to use. Not a LIM.
+              Type an Auckland address, confirm the right property, and read what
+              the council and LINZ know about it — the rating valuation and annual
+              rates, the school enrolment zones, the flood and coastal maps, and
+              what you can build — in plain English, with the source link next to
+              every line. Built for first-home buyers, renovators, extenders, and
+              people adding a dwelling. Free to use. Not a LIM.
             </p>
 
             <form onSubmit={search} className="mt-8 max-w-md">
@@ -223,7 +224,7 @@ export default function SearchPage() {
                 {candidates.map((c) => (
                   <li key={c.id} className="border-b border-hairline last:border-b-0">
                     <button
-                      onClick={() => router.push(`/property/confirm?addressId=${c.id}`)}
+                      onClick={() => router.push(`/property/confirm?addressId=${encodeURIComponent(c.id)}&label=${encodeURIComponent(c.label)}`)}
                       className="w-full px-4 py-3 text-left text-[0.95rem] hover:bg-surface"
                     >
                       {c.label}
@@ -256,8 +257,9 @@ export default function SearchPage() {
             Built around what you plan to do with the place.
           </h2>
           <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
-            The report puts the check that matters most to your decision first.
-            Pick the one that sounds like you.
+            The report puts the check that matters most to your decision first —
+            the value and rates for a buyer, the zone for a renovator, the flood
+            lines for an extender. Pick the one that sounds like you.
           </p>
           <ul className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-2 lg:grid-cols-3">
             {AUDIENCES.map((a, i) => (
@@ -278,7 +280,7 @@ export default function SearchPage() {
               <p className="label">Not for</p>
               <h3 className="display mt-3 text-[1.1rem]">Apartments &amp; cross-leases</h3>
               <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">
-                This version is for standalone houses and vacant sections.
+                This version is for standalone houses and vacant properties.
                 Places with messy boundaries need a different, slower check.
               </p>
             </li>
@@ -291,12 +293,12 @@ export default function SearchPage() {
         <div className="mx-auto max-w-[1250px] px-4 py-16 md:py-24">
           <p className="label">A real example</p>
           <h2 className="display mt-3 text-[1.75rem] md:text-[2rem]">
-            17 Shanaway Rise, Hillcrest — what the check actually showed.
+            17 Shanaway Rise, Hillcrest — what the report actually showed.
           </h2>
           <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
             This is a real run on a real Auckland address, not a mockup. The
-            section (LINZ parcel 5169096, 687 m²) is in Hillcrest. Here&apos;s what
-            the check returned on 2 November 2026.
+            property (LINZ parcel 5169096, 687 m²) is in Hillcrest. Here&apos;s what
+            the report returned on 2 November 2026.
           </p>
           <ol className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-2 lg:grid-cols-4">
             {JOURNEY.map((s, i) => (
@@ -315,41 +317,77 @@ export default function SearchPage() {
             ))}
           </ol>
 
-          {/* real finding from the live run on 2 Nov 2026 */}
+          {/* real rating valuation from the live run on 2 Nov 2026 */}
           <div className="mt-8 border border-hairline">
             <div className="flex items-start justify-between gap-4 border-b border-hairline px-5 py-4">
               <div>
-                <p className="label">Finding 04 · what you can build</p>
+                <p className="label">Rating valuation &amp; council rates</p>
                 <h3 className="display mt-1 text-[1.1rem] leading-snug">
-                  Residential — Mixed Housing Suburban zone.
+                  CV $1,350,000 · land $1,150,000 · rates $4,516/yr.
                 </h3>
               </div>
               <span className="stamp text-st-detected bg-st-detected-wash border-st-detected-line">
-                On the map
+                On the council record
               </span>
             </div>
             <div className="px-5 py-4 text-[0.9rem] leading-relaxed">
               <p>
-                The Unitary Plan zone for this section is Mixed Housing Suburban,
-                and the check links to the exact rule chapter (H4) that sets
-                what&apos;s permitted, discretionary, and non-complying here.
+                The council rating valuation for this property, pulled live from
+                Auckland Council&apos;s public rates search: capital value
+                $1,350,000, land value $1,150,000, improvement value $200,000,
+                and annual rates of $4,516 for the rating year. Land area 685 m²,
+                floor area 130 m², in the Kaipatiki local board.
               </p>
               <p className="mt-3 text-ink-muted">
                 <span className="label mr-2">What this doesn&apos;t tell you</span>
-                The base zone only. Overlays (special character, historic
-                heritage, significant ecological areas, volcanic viewshafts),
-                precincts, and designations are separate layers we haven&apos;t
-                added yet. This doesn&apos;t tell you the height, the activity
-                status, or whether a specific consent would go through.
+                This is the council&apos;s rating valuation, not a market valuation
+                or a registered valuation. The CV reflects the likely selling
+                price at the last revaluation date, not today. Annual rates are
+                the total assessment, not what&apos;s currently paid.
               </p>
               <p className="mt-4 border-t border-hairline pt-3 label">
-                Source · Auckland Unitary Plan base zones (council data, free to reuse) · pulled on the day you run it
+                Source · Auckland Council rating valuation (council public rates search) · pulled 2 November 2026
               </p>
+            </div>
+          </div>
+
+          {/* real zone + school zones from the live run */}
+          <div className="mt-4 grid grid-cols-1 border border-hairline sm:grid-cols-2">
+            <div className="border-hairline p-5 sm:border-r">
+              <p className="label">What you can build</p>
+              <h3 className="display mt-2 text-[1.05rem] leading-snug">
+                Residential — Mixed Housing Suburban zone.
+              </h3>
+              <p className="mt-2 text-[0.85rem] leading-relaxed text-ink-muted">
+                The Unitary Plan zone for this property, with a link to the exact
+                rule chapter (H4) that sets what&apos;s permitted, discretionary,
+                and non-complying here. Overlays and precincts are separate layers
+                not yet added.
+              </p>
+              <span className="stamp mt-3 inline-block text-st-detected bg-st-detected-wash border-st-detected-line">
+                On the map
+              </span>
+            </div>
+            <div className="p-5">
+              <p className="label">School enrolment zones</p>
+              <h3 className="display mt-2 text-[1.05rem] leading-snug">
+                Northcote College, Northcote Intermediate, Willow Park.
+              </h3>
+              <p className="mt-2 text-[0.85rem] leading-relaxed text-ink-muted">
+                The property&apos;s centroid sits inside three enrolment home
+                zones — a secondary (Northcote College), an intermediate
+                (Northcote Intermediate), and a contributing primary (Willow
+                Park). The Equity Index join is still being wired; until then we
+                show the school name and type.
+              </p>
+              <span className="stamp mt-3 inline-block text-st-detected bg-st-detected-wash border-st-detected-line">
+                On the map
+              </span>
             </div>
           </div>
           <p className="label mt-4">
             The same run also returned flood paths, flood-prone areas, and coastal
-            storm-tide as not on this section — reported as &ldquo;not on the
+            storm-tide as not on this property — reported as &ldquo;not on the
             map&rdquo;, not as &ldquo;all clear&rdquo;. If the data had been
             missing, we&apos;d have said &ldquo;we couldn&apos;t check&rdquo;
             instead. That&apos;s the honesty rule.
@@ -362,7 +400,7 @@ export default function SearchPage() {
         <div className="mx-auto max-w-[1250px] px-4 py-16 md:py-24">
           <p className="label">What we check</p>
           <h2 className="display mt-3 text-[1.75rem] md:text-[2rem]">
-            Four things on the report today.
+            Six things on the report today.
           </h2>
           <div className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-2 lg:grid-cols-4">
             {CHECKS.map((c, i) => (
@@ -421,7 +459,7 @@ export default function SearchPage() {
             Free today. A paid PDF is coming.
           </h2>
           <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
-            The on-screen report — type an address, confirm the section, read the
+            The on-screen report — type an address, confirm the property, read the
             findings with sources — is free today. A printable, shareable PDF is
             coming at NZ$25–30, as a screen before the LIM (the Auckland Council LIM
             is $375 and takes 10 working days). The paywall isn&apos;t built yet;
@@ -447,12 +485,15 @@ export default function SearchPage() {
               </nav>
             </div>
             <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
-              Council map data, pulled straight from the Auckland Council and LINZ
-              data hubs under a free-to-reuse licence. Not a LIM, not ownership
-              confirmation, not a promise you&apos;ll get consent. Flood, coastal,
-              and the Unitary Plan zone are live today; slope and stormwater are
-              still coming.
-            </p>
+            Council map data, pulled straight from the Auckland Council and LINZ
+            data hubs under a free-to-reuse licence. The rating valuation is
+            pulled live from Auckland Council&apos;s public rates search (a
+            public per-property API, not an open-licensed feed). Not a LIM, not
+            ownership confirmation, not a promise you&apos;ll get consent.
+            Rating valuation, school zones, flood, coastal, and the Unitary
+            Plan zone are live today; overlays and more hazards are still
+            coming.
+          </p>
           </div>
           <hr className="rule mt-8" />
           <p className="label mt-4">© morebeanz</p>

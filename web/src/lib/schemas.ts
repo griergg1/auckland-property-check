@@ -60,6 +60,7 @@ export const AssessmentRunRequest = z.object({
       message: "parcelIds must be unique",
     }),
   intention: BuyerIntention.default("live"),
+  addressLabel: z.string().min(3).max(300).optional(),
 });
 
 export const FollowUpQuestion = z.object({

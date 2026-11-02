@@ -138,6 +138,51 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Status | `verified` — endpoint, licence (CC BY 4.0), and coverage confirmed 2026-11-02. Version stays `draft` until the last page succeeds, then `active`. |
 | Notes | The 1% AEP (100-year return period, present-day sea level) is the standard planning scenario shown on the Auckland Council Flood Viewer. Sea-level-rise variants are separate FeatureServices and are out of scope for this check. The dataset maps the extent of sea-water coverage from sustained coastal storm-tide flooding (joint probability of high tide, storm surge, and wave setup); wave runup, overtopping, and freshwater flooding are not included. Used for the `hazard.coastal_inundation` check, which intersects the confirmed parcel (not the address point). |
 
+## Auckland Council — Rating Valuation & Council Rates (per-property API)
+
+| Field | Value |
+|-------|-------|
+| Slug | `ac-rating-valuation` |
+| Source org | Auckland Council (Experience platform) |
+| Layer | Rate Assessment (per-property) |
+| Data type | JSON (no geometry — per-property values) |
+| Access method | Undocumented public read-only JSON API, no key, no login |
+| Address search | `GET https://experience.aucklandcouncil.govt.nz/nextapi/property?query={ADDRESS}&pageSize=10` → returns `ACRateAccountKey` + address |
+| Rate assessment | `GET https://experience.aucklandcouncil.govt.nz/nextapi/property/{ACRateAccountKey}/rate-assessment` → CV, landValue, valueOfImprovements, totalRates, valuationNumber, area, totalFloorArea, buildingSiteCoverage, landUseDescription, localBoard, propertyCategory, legalDescription |
+| Auth | Public browser bearer token extracted from the council's own rates-search page (`https://www.aucklandcouncil.govt.nz/en/property-rates-valuations/find-property-rates-valuation.html`). No user credentials, no API key, no cookie, no login. The token is the same one the council's own public search page uses. |
+| Required headers | `Authorization: Bearer {token}`, `Accept: application/json`, `Origin: https://www.aucklandcouncil.govt.nz`, `Referer: {search page}`, browser-like `User-Agent` |
+| Licence | Public per-property data shown on the council's own public rates-search page. Not CC-BY-licensed open data; we display per-property on the report (same as the council's own page does), we do not redistribute or bulk-harvest. Cached for 7 days to avoid repeat load. |
+| Attribution | "Auckland Council — rating valuation & rates (council public rates search)" |
+| Source / rule page | https://www.aucklandcouncil.govt.nz/en/property-rates-valuations/find-property-rates-valuation.html · per-property page: `https://www.aucklandcouncil.govt.nz/en/property-rates-valuations/find-property-rates-valuation/{ACRateAccountKey}.html` |
+| Update cadence | Triennial revaluation (most recent 2024); annual rates (set each July for the rating year) |
+| Status | `access-check` — endpoint and auth model confirmed 2026-11-02 via the council's own public search page and third-party skill notes (`thecolab-ai/skills/property-rates-nz`, last verified 2026-07-19). Not a formal open-data feed with a CC BY licence; treated as a public per-property API. |
+| Notes | QV's free service terms prohibit commercial use, bulk harvesting, scraping, and automated queries; bulk API access requires commercial PropertyIQ licensing — so QV is OUT for the free tier. The council's own public rate-assessment API is the free feed. The RV date is not directly exposed by the endpoint; we record the retrieval date and note the triennial cycle in the limitations. Used for the `value.rating_valuation` check, resolved per-property at report time (address → ACRateAccountKey → rate-assessment), cached 7 days in `rating_valuation_cache`. |
+
+---
+
+## Ministry of Education — School Enrolment Home Zones
+
+| Field | Value |
+|-------|-------|
+| Slug | `moe-school-enrolment-zones` |
+| Source org | Ministry of Education (Crown copyright) |
+| Layer | School Enrolment Home Zones (enrolment scheme boundaries) |
+| Item URL | https://www.arcgis.com/home/item.html?id=2effe91b31fc40d39434c35491e844c5 |
+| Data type | Polygon (MultiPolygon) |
+| CRS | NZTM2000 (EPSG:2193) |
+| Access method | ArcGIS REST FeatureServer (Eagle Technology Living Atlas republish of MoE data), no auth, open data |
+| Endpoint | `https://services.arcgis.com/XTtANUDT8Va4DLwI/arcgis/rest/services/NZ_School_Zone_boundaries/FeatureServer/0` |
+| Query example | `.../FeatureServer/0/query?where=1%3D1&outFields=OBJECTID,School_ID,School_name,Office,Institution_type,Approval_date,Effective_date&outSR=2193&returnGeometry=true&f=geojson&resultRecordCount=2000` |
+| Max record count | 2000 per request → paginate with `resultOffset`; honour `exceededTransferLimit` |
+| Fields | `OBJECTID`, `School_ID` (MoE school number), `School_name`, `Office` (region code; `AK` = Auckland), `Institution_type` (Primary / Intermediate / Secondary / Composite / Contributing / Full Primary), `Approval_date`, `Effective_date`, `Shape__Area`, `Shape__Length` |
+| Licence | Crown copyright — Ministry of Education, CC BY 3.0 NZ (per the item `licenseInfo`: "Contains data sourced from the Ministry of Education licensed for reuse under Creative Commons Attribution 3.0 New Zealand"). Equivalent to CC BY 4.0 for reuse. |
+| Attribution | "Ministry of Education — School Enrolment Home Zones (CC BY 3.0 NZ, Crown copyright)" |
+| Source / rule page | https://www.educationcounts.govt.nz/data-services/school-enrolment-zones · Education Counts "Find Your Nearest School" tab for address lookup |
+| Update cadence | Updated throughout the year as enrolment schemes change; Living Atlas layer last updated 16 September 2026 (data date 14 July 2026) |
+| Count | 1,325 enrolment home zone polygons (national; 447 tagged `Office=AK` Auckland) (queried 2026-11-02) |
+| Status | `verified` — endpoint, licence (CC BY 3.0 NZ, Crown copyright), and coverage confirmed 2026-11-02. Imported 1,325 national polygons; version stayed `draft` until the last page succeeded, then `active`. |
+| Notes | The Living Atlas layer is generalised by Eagle Technology for web display and does not fully represent the official boundaries; fine for parcel-centroid point-in-polygon. Where the map and the written zone description conflict, the written description prevails. The Equity Index (the 2023+ replacement for the old decile) is not yet joined — the layer has `School_ID` (joinable to the MoE schools directory / EQI Excel) but the directory fetch is a follow-up. Used for the `neighbourhood.school_zones` check, which intersects the confirmed parcel centroid (ST_Contains) against the imported polygons. |
+
 ---
 
 ## Import plan (PoC → MVP)

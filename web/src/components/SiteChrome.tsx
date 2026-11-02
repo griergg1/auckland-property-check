@@ -89,10 +89,12 @@ export function SiteFooter() {
           </div>
           <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
             Council map data, pulled straight from the Auckland Council and LINZ
-            data hubs under a free-to-reuse licence. Not a LIM, not ownership
-            confirmation, not a promise you&apos;ll get consent. Flood, coastal,
-            and the Unitary Plan zone are live today; slope and stormwater are
-            still coming.
+            data hubs under a free-to-reuse licence. The rating valuation is
+            pulled live from Auckland Council&apos;s public rates search (a
+            public per-property API, not an open-licensed feed). Not a LIM, not
+            ownership confirmation, not a promise you&apos;ll get consent.
+            Rating valuation, school zones, flood, coastal, and the Unitary
+            Plan zone are live today; overlays and more hazards are still coming.
           </p>
         </div>
         <hr className="rule mt-8" />

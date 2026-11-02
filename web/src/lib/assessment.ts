@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Finding, BuyerIntention } from "./schemas";
+import { getRatingValuation, propertyPageUrl, type RatingValuation } from "./council-rates";
 
 export const RULE_VERSION = "rules.v1";
 
@@ -68,7 +69,8 @@ async function runCheck(
     | "assess_overland_flow"
     | "assess_flood_prone"
     | "assess_unitary_plan_zone"
-    | "assess_coastal_inundation",
+    | "assess_coastal_inundation"
+    | "assess_school_zones",
   parcelId: string,
   intention: BuyerIntention,
   fallback: Finding,
@@ -116,5 +118,84 @@ export async function runChecksForParcel(
     intention,
     unavailableFinding("planning.zone", "Unitary Plan zone check", intention, "No data returned."),
   );
-  return [overland, flood, coastal, zone];
+  const schools = await runCheck(
+    sb,
+    "assess_school_zones",
+    parcelId,
+    intention,
+    unavailableFinding("neighbourhood.school_zones", "School enrolment zones check", intention, "No data returned."),
+  );
+  return [overland, flood, coastal, zone, schools];
+}
+
+function fmtMoney(n: number | null): string {
+  if (n == null) return "—";
+  return "$" + n.toLocaleString("en-NZ");
+}
+
+// Rating valuation + council rates. This is the one check that is NOT a PostGIS
+// intersection — it is a per-property fetch from Auckland Council's public
+// rate-assessment API. Same four-state shape as the other findings; `unavailable`
+// if the council API can't return a value for this address.
+export async function runRatingValuationCheck(
+  sb: SupabaseClient,
+  addressLabel: string,
+): Promise<Finding> {
+  const retrievalDate = new Date().toISOString();
+  const base: Finding = {
+    id: "",
+    checkId: "value.rating_valuation",
+    ruleVersion: RULE_VERSION,
+    status: "unavailable",
+    title: "Rating valuation & council rates",
+    explanation: "The council's rating valuation for this property could not be retrieved.",
+    limitations:
+      "This is the council's rating valuation, not a market valuation or a registered valuation.",
+    followUpQuestions: [],
+    sourceUrl: undefined,
+    datasetVersionId: null,
+    featureIds: [],
+    evidenceGeometry: null,
+    retrievalDate,
+    intentions: ["live", "renovate", "extend", "add_dwelling", "vacant_build"],
+  };
+
+  let rv: RatingValuation | null = null;
+  try {
+    rv = await getRatingValuation(sb, addressLabel);
+  } catch (err) {
+    // Log the raw error server-side; surface only a fixed user-safe message in the finding
+    // (never the raw exception text, which can leak upstream details).
+    console.warn("rating valuation fetch failed:", (err as Error).message);
+    return base;
+  }
+  if (!rv || (rv.capitalValue == null && rv.annualRates == null)) {
+    return base;
+  }
+
+  const lines: string[] = [];
+  if (rv.capitalValue != null) lines.push(`Capital value (CV): ${fmtMoney(rv.capitalValue)}`);
+  if (rv.landValue != null) lines.push(`Land value: ${fmtMoney(rv.landValue)}`);
+  if (rv.improvementValue != null) lines.push(`Improvement value: ${fmtMoney(rv.improvementValue)}`);
+  if (rv.annualRates != null) lines.push(`Annual council rates: ${fmtMoney(rv.annualRates)}`);
+  if (rv.landAreaM2 != null) lines.push(`Land area: ${rv.landAreaM2.toLocaleString()} m²`);
+  if (rv.totalFloorAreaM2 != null) lines.push(`Floor area: ${rv.totalFloorAreaM2.toLocaleString()} m²`);
+  if (rv.localBoard) lines.push(`Local board: ${rv.localBoard}`);
+  const explanation =
+    `The council's rating valuation for this property, as held by Auckland Council` +
+    ` (rating valuation #${rv.valuationNumber ?? "—"}): ` +
+    lines.join(" · ") +
+    `. Auckland Council revalues every three years (most recent 2024); annual rates are set each July for the rating year.`;
+
+  return {
+    ...base,
+    status: "detected",
+    title: "Rating valuation & council rates",
+    explanation,
+    limitations:
+      "This is the council's rating valuation, not a market valuation or a registered valuation. The CV reflects the likely selling price at the last revaluation date, not today. Annual rates are the total assessment for the rating year, not what's currently paid (rebates, targeted rates, and arrears can change the actual amount).",
+    sourceUrl: propertyPageUrl(rv.acRateAccountKey),
+    featureIds: [rv.acRateAccountKey],
+    retrievalDate: rv.fetchedAt ?? retrievalDate,
+  };
 }

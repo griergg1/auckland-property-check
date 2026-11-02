@@ -41,6 +41,7 @@ function ConfirmContent() {
   const router = useRouter();
   const params = useSearchParams();
   const addressId = params.get("addressId") ?? "";
+  const addressLabel = params.get("label") ?? "";
   const [candidates, setCandidates] = useState<ParcelCandidate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +83,7 @@ function ConfirmContent() {
       const res = await fetch("/api/assessment/run", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ parcelIds: [parcel.id], intention }),
+        body: JSON.stringify({ parcelIds: [parcel.id], intention, addressLabel: addressLabel || undefined }),
       });
       if (!res.ok) {
         setError("assessment failed");
