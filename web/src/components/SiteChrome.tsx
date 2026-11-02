@@ -1,33 +1,16 @@
 import Link from "next/link";
+import Image from "next/image";
 
-/* Parcel + contour mark — matches /public/mark.svg */
-export function Mark({ size = 28 }: { size?: number }) {
+export function Logo({ className = "h-8 w-auto" }: { className?: string }) {
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      aria-hidden="true"
-      className="text-ink"
-    >
-      <rect x="8" y="8" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="M 14 34 Q 24 22 34 34"
-        fill="none"
-        stroke="#7A5A3A"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M 14 30 Q 24 20 34 30"
-        fill="none"
-        stroke="#7A5A3A"
-        strokeWidth="2"
-        strokeLinecap="round"
-        opacity="0.45"
-      />
-    </svg>
+    <Image
+      src="/morebeanz-logo.png"
+      alt="morebeanz"
+      width={1376}
+      height={237}
+      className={className}
+      priority
+    />
   );
 }
 
@@ -41,12 +24,11 @@ const NAV_LINKS = [
 export function SiteHeader({ active }: { active?: "home" | "shortlist" }) {
   return (
     <header className="border-b border-hairline">
-      <div className="mx-auto flex max-w-[1250px] items-center justify-between px-4 py-4">
-        <Link href="/" className="flex items-center gap-3">
-          <Mark />
-          <span className="display text-[1.15rem] leading-none">morebeanz</span>
+      <div className="mx-auto flex max-w-[1250px] flex-wrap items-center justify-between gap-y-2 px-4 py-4">
+        <Link href="/" className="flex items-center">
+          <Logo className="h-7 w-auto sm:h-8" />
         </Link>
-        <nav className="label flex items-center gap-4 sm:gap-6">
+        <nav className="label flex flex-wrap items-center gap-x-4 gap-y-1 sm:gap-x-6">
           <Link
             href="/"
             className={active === "home" ? "text-ink" : "hover:text-ink"}
@@ -77,8 +59,7 @@ export function SiteFooter() {
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <Mark />
-              <span className="display text-[1.15rem]">morebeanz</span>
+              <Logo className="h-7 w-auto" />
             </div>
             <p className="label mt-3">Preliminary property research · Auckland</p>
             <nav className="label mt-3 flex flex-wrap gap-x-4 gap-y-1">

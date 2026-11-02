@@ -130,6 +130,24 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-02 — Home page: harbour palette, logo, real Shanaway parcel
+
+**Goal:** Make the home page look like a New Zealand property tool, put the artwork logo on the site, and show the real 17 Shanaway Rise boundary instead of a drawn blob.
+
+**Done:**
+- Replaced the warm tan palette with a soft harbour-and-bush palette: sky-to-bush page gradient, teal accent, deep-harbour ink, blue/green status stamps. Recorded in `docs/DESIGN.md` and `web/src/app/globals.css`. Map evidence overlay is water blue.
+- Home page field sheet and the four check plates (`web/src/components/HomeGraphics.tsx`). Example figures sit on a deep water-to-green band.
+- Logo from `docs/Artwork/Morebeanzlogo.png` (trimmed, white made transparent) is `web/public/morebeanz-logo.png`, used in the home header/footer and `SiteChrome`. Favicon is the kiwi "b" (`web/src/app/icon.png`); the old parcel `icon.svg` is removed.
+- The field-sheet outline is LINZ parcel 5169096 (17 Shanaway Rise), north-up. The blue lines are the Auckland Council overland-flow paths that pass within 25 m. None cross the parcel. Caption is the address and parcel id.
+
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (4 pass with network; the live Supabase test fails only when the sandbox blocks fetch) / manual ✅ (home at 390px: logo, stacked search, no overflow; search for "17 Shanaway Rise, Hillcrest" returns the address) / CodeRabbit ✅ (2 minor: logo file is `web/public/morebeanz-logo.png` and is in this commit; shared header wraps and the logo is smaller under `sm`) / secrets not in git ✅
+
+**Next:** Wave 2.1 in `docs/PRODUCT_SCOPE_V15_PLAN.md` — landslide susceptibility (Auckland Council, same ArcGIS import path as the live hazard layers). Then Wave 2.2, Unitary Plan overlays.
+
+**Notes:**
+- The field-sheet geometry is a static projection of the 2 Nov 2026 parcel and the nearby flow lines, not a live map. If the parcel id for this address changes again, the drawing goes stale the same way the copy did.
+- Equity Index join and the council rates terms review stay follow-ups. They are not the next build.
+
 ## 2026-11-02 — v1.5 Wave 1: rating valuation, school zones, what-to-ask, hero rewrite
 
 **Goal:** Build Wave 1 of the v1.5 home-buyer-report plan — the three items that flip the product from a land-buyer tool into a home-buyer tool (rating valuation + council rates, school enrolment zones, intention-aware what-to-ask layer) — then rewrite the home page hero to lead with the home buyer, backed by the new live findings.

@@ -2,6 +2,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { FieldSheet, FloodPlate, SchoolPlate, ValuePlate, ZonePlate } from "@/components/HomeGraphics";
+import { Logo } from "@/components/SiteChrome";
 
 type Candidate = { id: string; label: string };
 
@@ -10,21 +12,25 @@ const CHECKS = [
     label: "Live now",
     title: "Value & rates",
     body: "The council rating valuation (CV, land value, improvement value) and the annual council rates, pulled live from Auckland Council's public rates search and shown on the report header.",
+    plate: ValuePlate,
   },
   {
     label: "Live now",
     title: "School zones",
     body: "The primary, intermediate, and secondary enrolment home zones that contain the property, from the Ministry of Education. The Equity Index join is still being wired.",
+    plate: SchoolPlate,
   },
   {
     label: "Live now",
     title: "Flood & coastal",
     body: "Council flood maps — overland flow paths, flood-prone areas, and coastal storm-tide — matched to your property, not the street.",
+    plate: FloodPlate,
   },
   {
     label: "Live now",
     title: "What you can build",
     body: "The Unitary Plan zone for the property, named in plain English, with a link to the exact rule chapter. Overlays and precincts are still being added.",
+    plate: ZonePlate,
   },
 ];
 
@@ -150,7 +156,7 @@ export default function SearchPage() {
   return (
     <div className="flex min-h-full flex-col">
       {/* announcement strip — sets the honest tone */}
-      <div className="border-b border-hairline bg-paper">
+      <div className="border-b border-hairline">
         <p className="label mx-auto max-w-[1250px] px-4 py-2 text-center">
           Free to use · Not a LIM · Every line sourced
         </p>
@@ -159,9 +165,8 @@ export default function SearchPage() {
       {/* header */}
       <header className="border-b border-hairline">
         <div className="mx-auto flex max-w-[1250px] items-center justify-between px-4 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <Mark />
-            <span className="display text-[1.15rem] leading-none">morebeanz</span>
+          <Link href="/" className="flex items-center">
+            <Logo />
           </Link>
           <nav className="label flex items-center gap-4 sm:gap-6">
             <a href="#who" className="hidden sm:inline hover:text-ink">Who it&apos;s for</a>
@@ -195,7 +200,7 @@ export default function SearchPage() {
               <label className="label block" htmlFor="addr">
                 Address
               </label>
-              <div className="mt-2 flex border border-hairline bg-surface">
+              <div className="mt-2 flex flex-col border border-hairline bg-surface sm:flex-row">
                 <input
                   id="addr"
                   type="text"
@@ -205,12 +210,12 @@ export default function SearchPage() {
                     setSearched(false);
                   }}
                   placeholder="Enter an Auckland street address"
-                  className="flex-1 bg-transparent px-3 py-3 text-[0.95rem] placeholder:text-ink-muted focus:outline-none"
+                  className="min-w-0 flex-1 bg-transparent px-3 py-3 text-[0.95rem] placeholder:text-ink-muted focus:outline-none"
                 />
                 <button
                   type="submit"
                   disabled={loading || q.length < 2}
-                  className="label border-l border-hairline px-5 py-3 text-ink hover:bg-ink hover:text-paper disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink"
+                  className="label border-t border-hairline px-5 py-3 text-ink hover:bg-ink hover:text-paper disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink sm:border-t-0 sm:border-l"
                 >
                   {loading ? "Searching" : "Check this address"}
                 </button>
@@ -242,9 +247,12 @@ export default function SearchPage() {
             <p className="label mt-8">Free · not a LIM · every line sourced</p>
           </div>
 
-          {/* right: topographic backdrop */}
-          <div className="relative hidden min-h-[420px] bg-surface md:block">
-            <TopoBackdrop />
+          {/* right: a real field sheet, not a faint pattern */}
+          <div className="wash border-t border-hairline p-4 sm:p-6 md:border-t-0 md:p-8">
+            <FieldSheet />
+            <p className="label mt-3">
+              17 Shanaway Rise, Hillcrest · LINZ parcel 5169096 · 687 m²
+            </p>
           </div>
         </div>
       </section>
@@ -310,45 +318,35 @@ export default function SearchPage() {
                   i >= 1 ? "border-t sm:border-t-0" : ""
                 } ${i >= 2 ? "lg:border-t" : ""}`}
               >
-                <p className="label">{s.n}</p>
-                <h3 className="display mt-3 text-[1.15rem]">{s.title}</h3>
+                <p className="display text-[2.75rem] leading-none text-accent">{s.n}</p>
+                <h3 className="display mt-4 text-[1.15rem]">{s.title}</h3>
                 <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">{s.body}</p>
               </li>
             ))}
           </ol>
 
           {/* real rating valuation from the live run on 2 Nov 2026 */}
-          <div className="mt-8 border border-hairline">
-            <div className="flex items-start justify-between gap-4 border-b border-hairline px-5 py-4">
-              <div>
-                <p className="label">Rating valuation &amp; council rates</p>
-                <h3 className="display mt-1 text-[1.1rem] leading-snug">
-                  CV $1,350,000 · land $1,150,000 · rates $4,516/yr.
-                </h3>
-              </div>
-              <span className="stamp text-st-detected bg-st-detected-wash border-st-detected-line">
-                On the council record
-              </span>
+          <div className="tide mt-8 border border-ink">
+            <div className="grid grid-cols-2 lg:grid-cols-4">
+              {[
+                ["Capital value", "$1,350,000"],
+                ["Land value", "$1,150,000"],
+                ["Improvement", "$200,000"],
+                ["Rates", "$4,516"],
+              ].map(([k, v], i) => (
+                <div
+                  key={k}
+                  className={`tide-line px-5 py-6 ${i % 2 === 1 ? "border-l" : ""} ${i >= 2 ? "border-t lg:border-t-0" : ""} ${i > 0 ? "lg:border-l" : ""}`}
+                >
+                  <p className="label tide-muted">{k}</p>
+                  <p className="display mt-2 text-[1.7rem] text-paper md:text-[2rem]">{v}</p>
+                </div>
+              ))}
             </div>
-            <div className="px-5 py-4 text-[0.9rem] leading-relaxed">
-              <p>
-                The council rating valuation for this property, pulled live from
-                Auckland Council&apos;s public rates search: capital value
-                $1,350,000, land value $1,150,000, improvement value $200,000,
-                and annual rates of $4,516 for the rating year. Land area 685 m²,
-                floor area 130 m², in the Kaipatiki local board.
-              </p>
-              <p className="mt-3 text-ink-muted">
-                <span className="label mr-2">What this doesn&apos;t tell you</span>
-                This is the council&apos;s rating valuation, not a market valuation
-                or a registered valuation. The CV reflects the likely selling
-                price at the last revaluation date, not today. Annual rates are
-                the total assessment, not what&apos;s currently paid.
-              </p>
-              <p className="mt-4 border-t border-hairline pt-3 label">
-                Source · Auckland Council rating valuation (council public rates search) · pulled 2 November 2026
-              </p>
-            </div>
+            <p className="tide-line tide-muted border-t px-5 py-3 text-[0.8rem] leading-relaxed">
+              Council rating valuation, not a market value. Land 685 m², floor 130 m²,
+              Kaipatiki local board. Pulled 2 November 2026 from Auckland Council&apos;s public rates search.
+            </p>
           </div>
 
           {/* real zone + school zones from the live run */}
@@ -400,23 +398,31 @@ export default function SearchPage() {
         <div className="mx-auto max-w-[1250px] px-4 py-16 md:py-24">
           <p className="label">What we check</p>
           <h2 className="display mt-3 text-[1.75rem] md:text-[2rem]">
-            Six things on the report today.
+            On the report today.
           </h2>
           <div className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-2 lg:grid-cols-4">
-            {CHECKS.map((c, i) => (
-              <div
-                key={c.label}
-                className={`border-hairline p-6 ${
-                  i % 4 !== 0 ? "lg:border-l" : ""
-                } ${i % 2 !== 0 ? "sm:border-l lg:border-l-0" : ""} ${
-                  i >= 1 ? "border-t sm:border-t-0" : ""
-                } ${i >= 2 ? "lg:border-t" : ""}`}
-              >
-                <p className="label">{c.label}</p>
-                <h3 className="display mt-3 text-[1.15rem]">{c.title}</h3>
-                <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">{c.body}</p>
-              </div>
-            ))}
+            {CHECKS.map((c, i) => {
+              const Plate = c.plate;
+              return (
+                <div
+                  key={c.title}
+                  className={`border-hairline ${
+                    i % 4 !== 0 ? "lg:border-l" : ""
+                  } ${i % 2 !== 0 ? "sm:border-l lg:border-l-0" : ""} ${
+                    i >= 1 ? "border-t sm:border-t-0" : ""
+                  } ${i >= 2 ? "lg:border-t" : ""}`}
+                >
+                  <div className="border-b border-hairline bg-surface">
+                    <Plate />
+                  </div>
+                  <div className="p-6">
+                    <p className="label">{c.label}</p>
+                    <h3 className="display mt-3 text-[1.15rem]">{c.title}</h3>
+                    <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">{c.body}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -452,19 +458,22 @@ export default function SearchPage() {
       </section>
 
       {/* pricing */}
-      <section className="border-b border-hairline">
-        <div className="mx-auto max-w-[1250px] px-4 py-16 md:py-24">
-          <p className="label">What it costs</p>
-          <h2 className="display mt-3 text-[1.75rem] md:text-[2rem]">
-            Free today. A paid PDF is coming.
-          </h2>
-          <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
-            The on-screen report — type an address, confirm the property, read the
-            findings with sources — is free today. A printable, shareable PDF is
-            coming at NZ$25–30, as a screen before the LIM (the Auckland Council LIM
-            is $375 and takes 10 working days). The paywall isn&apos;t built yet;
-            we&apos;re not charging anyone anything right now.
-          </p>
+      <section className="tide border-b border-hairline">
+        <div className="mx-auto grid max-w-[1250px] grid-cols-1 items-end gap-8 px-4 py-16 md:grid-cols-[auto_1fr] md:py-24">
+          <p className="display text-[5.5rem] leading-none tracking-tight md:text-[7rem]">$0</p>
+          <div>
+            <p className="label tide-muted">What it costs</p>
+            <h2 className="display mt-3 text-[1.75rem] text-paper md:text-[2rem]">
+              Free today. A paid PDF is coming.
+            </h2>
+            <p className="tide-muted mt-4 max-w-2xl text-[0.95rem] leading-relaxed">
+              The on-screen report — type an address, confirm the property, read the
+              findings with sources — is free today. A printable, shareable PDF is
+              coming at NZ$25–30, as a screen before the LIM (the Auckland Council LIM
+              is $375 and takes 10 working days). The paywall isn&apos;t built yet;
+              we&apos;re not charging anyone anything right now.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -473,10 +482,7 @@ export default function SearchPage() {
         <div className="mx-auto max-w-[1250px] px-4 py-10">
           <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
             <div>
-              <div className="flex items-center gap-3">
-                <Mark />
-                <span className="display text-[1.15rem]">morebeanz</span>
-              </div>
+              <Logo className="h-7 w-auto" />
               <p className="label mt-3">Preliminary property research · Auckland</p>
               <nav className="label mt-3 flex flex-wrap gap-x-4 gap-y-1">
                 <Link href="/about" className="hover:text-ink">About</Link>
@@ -503,67 +509,3 @@ export default function SearchPage() {
   );
 }
 
-/* ---- logo mark (matches /public/mark.svg) ---- */
-function Mark() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <rect x="8" y="8" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" />
-      <path
-        d="M 14 34 Q 24 22 34 34"
-        fill="none"
-        stroke="#7A5A3A"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M 14 30 Q 24 20 34 30"
-        fill="none"
-        stroke="#7A5A3A"
-        strokeWidth="2"
-        strokeLinecap="round"
-        opacity="0.45"
-      />
-    </svg>
-  );
-}
-
-/* ---- topographic contour backdrop (pure CSS/SVG, no image) ---- */
-function TopoBackdrop() {
-  return (
-    <svg
-      className="absolute inset-0 h-full w-full"
-      viewBox="0 0 600 480"
-      preserveAspectRatio="xMidYMid slice"
-      aria-hidden="true"
-    >
-      <rect width="600" height="480" fill="#FBFAF6" />
-      <g
-        fill="none"
-        stroke="#7A5A3A"
-        strokeWidth="1"
-        opacity="0.28"
-        strokeLinecap="round"
-      >
-        <path d="M -40 360 Q 150 260 300 300 T 640 280" />
-        <path d="M -40 330 Q 150 230 300 270 T 640 250" />
-        <path d="M -40 300 Q 150 200 300 240 T 640 220" />
-        <path d="M -40 270 Q 150 170 300 210 T 640 190" />
-        <path d="M -40 240 Q 150 140 300 180 T 640 160" />
-        <path d="M -40 210 Q 150 110 300 150 T 640 130" />
-      </g>
-      <g
-        fill="none"
-        stroke="#1C1A17"
-        strokeWidth="1.5"
-        opacity="0.55"
-      >
-        {/* a parcel outline drawn over the contours */}
-        <path d="M 180 150 L 420 150 L 420 330 L 180 330 Z" />
-      </g>
-      <g stroke="#1C1A17" strokeWidth="1" opacity="0.4">
-        <path d="M 180 150 L 180 138 M 420 150 L 420 138" />
-        <path d="M 180 330 L 180 342 M 420 330 L 420 342" />
-      </g>
-    </svg>
-  );
-}

@@ -298,7 +298,10 @@ picture. The paid tier is a separate decision after v1.5 is live.
 
 ---
 
-**Next step:** you sign off (or correct) the scope direction in §5 and the
-v1.5 build order in §8. Then I rewrite `docs/BRIEF.md` to match, and the
-home page hero stops reading as a land-buyer tool.
+**Next step:** Wave 1 of `docs/PRODUCT_SCOPE_V15_PLAN.md` is live (rating
+valuation, school zones, what-to-ask, home-buyer hero). The next build is
+**Wave 2.1 — landslide susceptibility**, then **Wave 2.2 — Unitary Plan
+overlays**. §8's original order put "nearby" before landslide; the v1.5
+plan moved nearby to Wave 3. Equity Index join and the council rates
+terms review stay as follow-ups, not the next build.
 

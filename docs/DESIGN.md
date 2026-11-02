@@ -1,37 +1,41 @@
 # morebeanz — design system
 
-Visual and interaction language for the product. Reference aesthetic: [subtle-bodies.com](https://www.subtle-bodies.com/) — editorial, warm-neutral, hairline-led, no tech gloss. Adapted for a property-research tool: the feel of a surveyor's notebook and a council archive, not a dashboard.
+Visual and interaction language for the product. Editorial and hairline-led, in soft New Zealand harbour and bush colours: mist, sea, and green, with quiet gradients. Not a warm-tan archive, and not a bright dashboard.
 
 ## Principles
 
 1. **Findings first.** The map supports the text, not the other way around. Essential reading works without map interaction.
 2. **Honest, not flashy.** The product explicitly says it is *not* a LIM. The design must look measured and credible, never promotional.
-3. **Hairlines, not shadows.** Separate with 1px warm-beige borders. No drop shadows, no gradients, no glassmorphism.
-4. **Sharp corners.** Border radius is 0 (or 2px at most). Architectural, not soft.
-5. **One accent.** A single muted ochre carries the brand, links, and the primary action. Everything else is ink on warm paper.
+3. **Hairlines, not shadows.** Separate with 1px cool borders. No drop shadows, no glassmorphism. Gradients are slow shifts of sky into bush, or harbour into green — never bright or glossy.
+4. **Sharp corners.** Border radius is 0 (or 2px at most). The softness is in the colour, not the corners.
+5. **One accent.** A harbour teal carries the brand, links, and the primary action. Everything else is deep-harbour ink on mist.
 6. **Type carries the hierarchy.** Serif headlines, sans body, mono labels. Size and weight do the work; colour stays restrained.
 
 ## Colour
 
-Warm, earthy, "paper and ink". No pure black, no pure white, no tech blue.
+Mist, sea, and bush. No pure black, no pure white, no tan, no neon.
 
 | Token | Hex | Use |
 |------|-----|-----|
-| `paper` | `#F4F1EA` | Page background (warm eggshell) |
-| `surface` | `#FBFAF6` | Cards, panels |
-| `ink` | `#1C1A17` | Body text, headings (warm near-black) |
-| `ink-muted` | `#6B655B` | Secondary text, captions |
-| `hairline` | `#D9D3C5` | All 1px borders and dividers |
-| `accent` | `#7A5A3A` | Logo mark, links, primary action underline, focus ring |
+| `paper` | `#F3F7F6` | Page ground, under the body gradient |
+| `surface` | `#F7FBFA` | Cards, panels |
+| `ink` | `#163038` | Body text, headings (deep harbour) |
+| `ink-muted` | `#3F5A64` | Secondary text, captions |
+| `hairline` | `#C5D5D8` | All 1px borders and dividers |
+| `accent` | `#1A6572` | Logo mark, links, focus ring |
+| `water` | `#2A6F8F` | Flood and evidence overlays |
+| `bush` | `#2F6B52` | Clear / not-on-the-map green |
 
-### Status colours (muted, earthy — never bright dashboard pills)
+The page background is a fixed gradient: `#B7D3E6` → `#C9E0D8` → `#E7F3EF`. The hero plate (`.wash`) is `#8FBCD4` → `#A9D0C4` → `#D7EBE4`. Dark bands (`.tide`) are `#14343C` → `#1A4C56` → `#1C5546`.
+
+### Status colours (muted blue and green — never bright dashboard pills)
 
 | Status | Ink | Wash | Border |
 |--------|-----|------|--------|
-| `detected` | `#8B3A2B` (terracotta) | `#F3E5DD` | `#E2C9B8` |
-| `not_detected` | `#4A5D3A` (sage) | `#E8EBE0` | `#C9D4BE` |
-| `unavailable` | `#8A6D3F` (ochre) | `#F0E8D6` | `#D9C9A2` |
-| `needs_review` | `#5A4A6B` (muted plum) | `#ECE6F0` | `#D2C6DC` |
+| `detected` | `#1A4E6A` (harbour) | `#E4EEF4` | `#B7D0E0` |
+| `not_detected` | `#2C6B52` (bush) | `#E3F0E8` | `#B7D4C4` |
+| `unavailable` | `#4E6570` (slate) | `#E7EEEF` | `#C5D2D6` |
+| `needs_review` | `#3E5270` (dusk) | `#E6EAF2` | `#C5CEDC` |
 
 Status badges use a 1px border, no radius, small mono all-caps label. They read as archival stamps, not alert chips.
 
@@ -171,7 +175,7 @@ Almost none. Expand/collapse is a 120ms opacity + height transition. No page tra
 ## Accessibility
 
 - Status conveyed by text label, not colour alone (the stamps carry words).
-- Focus ring: 2px `accent` outline, 2px offset — visible on warm paper.
+- Focus ring: 2px `accent` outline, 2px offset — visible on the mist background.
 - Min body text 0.875rem; mono labels 0.6875rem only for non-essential meta.
 - Contrast: `ink` on `paper` ≈ 14:1; `ink-muted` on `paper` ≈ 6.5:1 — both pass AA.
 

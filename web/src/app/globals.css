@@ -1,29 +1,34 @@
 @import "tailwindcss";
 
 /* morebeanz — design tokens
-   See docs/DESIGN.md. Warm paper-and-ink palette, hairlines, sharp corners. */
+   Soft harbour and bush. Mist backgrounds, quiet gradients, no tan. */
 
 :root {
-  --paper: #F4F1EA;
-  --surface: #FBFAF6;
-  --ink: #1C1A17;
-  --ink-muted: #6B655B;
-  --hairline: #D9D3C5;
-  --accent: #7A5A3A;
+  --paper: #F3F7F6;
+  --surface: #F7FBFA;
+  --ink: #163038;
+  --ink-muted: #3F5A64;
+  --hairline: #C5D5D8;
+  --accent: #1A6572;
+  --water: #2A6F8F;
+  --bush: #2F6B52;
 
-  /* status (earthy, never bright) */
-  --st-detected-ink: #8B3A2B;
-  --st-detected-wash: #F3E5DD;
-  --st-detected-line: #E2C9B8;
-  --st-clear-ink: #4A5D3A;
-  --st-clear-wash: #E8EBE0;
-  --st-clear-line: #C9D4BE;
-  --st-unavail-ink: #8A6D3F;
-  --st-unavail-wash: #F0E8D6;
-  --st-unavail-line: #D9C9A2;
-  --st-review-ink: #5A4A6B;
-  --st-review-wash: #ECE6F0;
-  --st-review-line: #D2C6DC;
+  /* status — blue, green, slate. Restrained, never neon. */
+  --st-detected-ink: #1A4E6A;
+  --st-detected-wash: #E4EEF4;
+  --st-detected-line: #B7D0E0;
+  --st-clear-ink: #2C6B52;
+  --st-clear-wash: #E3F0E8;
+  --st-clear-line: #B7D4C4;
+  --st-unavail-ink: #4E6570;
+  --st-unavail-wash: #E7EEEF;
+  --st-unavail-line: #C5D2D6;
+  --st-review-ink: #3E5270;
+  --st-review-wash: #E6EAF2;
+  --st-review-line: #C5CEDC;
+
+  --tide-ink: #C9D8D6;
+  --tide-line: #2C5560;
 }
 
 @theme inline {
@@ -53,7 +58,9 @@
 }
 
 html, body {
-  background: var(--paper);
+  background-color: #D5E6EE;
+  background-image: linear-gradient(168deg, #B7D3E6 0%, #C9E0D8 42%, #E7F3EF 100%);
+  background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -65,13 +72,11 @@ html, body {
   border-radius: 0 !important;
 }
 
-/* focus ring tuned for warm paper */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-/* mono label helper */
 .label {
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -80,7 +85,6 @@ html, body {
   color: var(--ink-muted);
 }
 
-/* serif headline helper */
 .display {
   font-family: var(--font-serif);
   font-weight: 400;
@@ -88,13 +92,11 @@ html, body {
   line-height: 1.1;
 }
 
-/* hairline divider */
 .rule {
   border: 0;
   border-top: 1px solid var(--hairline);
 }
 
-/* status stamp */
 .stamp {
   font-family: var(--font-mono);
   text-transform: uppercase;
@@ -105,8 +107,26 @@ html, body {
   display: inline-block;
 }
 
-/* print niceties */
+/* sky into bush — hero plate, not a flat tan board */
+.wash {
+  background-image: linear-gradient(155deg, #8FBCD4 0%, #A9D0C4 48%, #D7EBE4 100%);
+}
+
+/* deep harbour — figures and price, still quiet */
+.tide {
+  background-image: linear-gradient(145deg, #14343C 0%, #1A4C56 50%, #1C5546 100%);
+  color: var(--paper);
+}
+
+.tide-muted {
+  color: var(--tide-ink);
+}
+
+.tide-line {
+  border-color: var(--tide-line);
+}
+
 @media print {
   :focus-visible { outline: none; }
-  body { background: #fff; color: #000; }
+  html, body { background: #fff; color: #000; }
 }
