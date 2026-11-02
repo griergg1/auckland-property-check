@@ -33,7 +33,7 @@ The core assessment must use **database queries and explicit rules**. AI is opti
 2. **Connection pooling** — Use Supabase pooler (transaction mode) from Vercel for PostGIS queries; avoid opening raw connections per request.
 3. **LINZ address schema** — LINZ is migrating address datasets (2026). Wrap address fields in a small adapter so WFS layer/field changes do not ripple through the app.
 4. **Optional AI later** — Keep explanation copy in versioned templates (`check_id` + `rule_version`); treat any LLM as a renderer of structured findings only.
-5. **PDF v1** — Browser print CSS first; add server PDF (e.g. `@react-pdf/renderer` or a microservice) only if print quality or pagination becomes a blocker.
+5. **PDF v1** — Browser print CSS first; add server PDF (e.g. `@react-pdf/renderer` or a microservice) only if print quality or pagination becomes a blocker. **This PDF is the paid product** (NZ$25–30 per report, see [BRIEF.md](./BRIEF.md)); it must render from the persisted assessment snapshot so it is reproducible from dataset + rule versions.
 
 ## Architecture
 
@@ -74,12 +74,15 @@ flowchart TB
 
 | Source | Intended use | Requirement |
 |--------|--------------|-------------|
-| LINZ Data Service | Addresses, parcels, elevation | Document datasets, licences, update schedules; Auckland clips |
+| LINZ Data Service | Addresses, parcels | Document datasets, licences, update schedules; Auckland clips |
 | LINZ Basemaps | Imagery and map context | Configure access + attribution in UI |
-| Auckland Council GIS / open data | Hazards, planning, stormwater | Verify **each layer** and its API; record licence |
+| Auckland Council GIS / open data | Flood (overland flow, flood prone, coastal inundation), landslide susceptibility, coastal erosion, tsunami, Unitary Plan zones + overlays | Verify **each layer** and its API; record licence (CC BY 4.0) |
+| NHCover claims map | Landslide claims history | Free public map; verify reuse terms |
 | Council information pages | Explanations and deep links | Store URLs on findings and check metadata |
 
 **Critical:** Public visibility in a map viewer does not prove bulk reuse rights. Catalogue APIs do not contain geometry — import or query feature services directly.
+
+**All v1 checks use free CC BY 4.0 data.** Paid layers (LINZ title, council property file, CoreLogic/QV AVM) are future upsells and must fit the $25–30 report price or be a separate line — see `progress.md` and [BRIEF.md](./BRIEF.md).
 
 Maintain [`docs/dataset-verification.md`](./dataset-verification.md) (per-layer ledger) before enabling checks in production.
 
@@ -99,7 +102,7 @@ Address-to-parcel match is **not** confirmation of legal ownership or title exte
 - Distinguish overlap, boundary contact, and proximity where checks require it.
 - Use **EPSG:2193 (NZTM2000)** for area/distance; emit **GeoJSON (4326)** for MapLibre.
 - Retain hazard **scenario and return-period** fields from source features.
-- Slope only where DEM coverage/resolution supports it; else `unavailable`.
+- **Slope is out of scope for v1** — relevant to building, not to buying an existing home; a LIM and a site visit cover it. If reintroduced later, only where DEM coverage/resolution supports it; else `unavailable`.
 - Building footprint vs section: only when a verified footprint source exists; otherwise state limitation.
 
 Infrastructure findings must not infer depth, capacity, or surveyed position from a map crossing alone.

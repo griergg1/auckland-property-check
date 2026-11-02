@@ -46,18 +46,19 @@ An initial search does not require an account. An account enables a saved shortl
 
 ## First-version features
 
-Each feature is enabled only after its underlying dataset has been **verified** for access, coverage, and permitted reuse.
+Each feature is enabled only after its underlying dataset has been **verified** for access, coverage, and permitted reuse. Checks are prioritised by **what buyers are told to check** (settled.govt.nz, Consumer Protection, NZ Law Society, Auckland Council), not by what data happens to exist.
 
-| Feature | What the buyer receives |
-|--------|-------------------------|
-| Property identification | Address, mapped land parcel, area where available, aerial imagery |
-| Mapped hazards | Findings from verified flood, overland flow, and coastal hazard datasets |
-| Planning information | Applicable zones and selected overlays, with explanations and links to relevant rules |
-| Terrain | Approximate slope indication where suitable elevation data exists |
-| Infrastructure | Selected mapped public infrastructure, starting with stormwater where available |
-| Personalised checklist | Questions relevant to the buyer’s intended use |
-| Property comparison | The same checks displayed side by side |
-| Export | Printable summary with sources, dates, and outstanding questions |
+| Feature | What the buyer receives | Status |
+|--------|-------------------------|--------|
+| Property identification | Address, mapped land parcel, area where available, aerial imagery | Live |
+| Mapped flood hazards | Overland flow paths, flood prone areas, **coastal inundation / storm-tide** — each intersected with the full parcel | Overland flow + flood prone live; coastal inundation next |
+| Other natural hazards | **Landslide susceptibility**, coastal erosion, tsunami zones, NHCover landslide claims history | Planned (landslide first) |
+| Planning information | Applicable **Unitary Plan base zone** and selected **overlays** (special character, historic heritage, significant ecological areas, volcanic viewshafts, precincts, designations), with explanations and links to rule chapters | Base zone live; overlays planned |
+| Personalised checklist | Questions relevant to the buyer's selected intention | Live (intention-aware ordering) |
+| Property comparison | The same checks displayed side by side | Planned (auth) |
+| Export | **Printable PDF report** with sources, dates, and outstanding questions | Planned (paywall) |
+
+**Out of scope for v1** (route to a professional, do not build): meth contamination, weathertightness/asbestos inspection, registered valuation, building-consents correctness, and **approximate slope**. Slope is relevant to someone *building* a property, not to someone *buying an existing* home; a LIM and a site visit cover it cheaply.
 
 ## How findings should appear
 
@@ -89,6 +90,20 @@ The website provides **preliminary research**. It does not:
 - Determine insurance availability
 
 The first version does **not** include automated property valuations, comprehensive consent histories, or conveyancing.
+
+## Monetization and report (spec — build later)
+
+**Price target: NZ$25–30 per report.** Positioning: a pre-LIM screen. The Auckland Council LIM costs $375 standard (10 working days) / $506 urgent (3 days); a registered valuation is $700–1,500. A $25–30 instant, parcel-intersected, intention-ordered report is the gap between free scattered council map viewers and the expensive canonical LIM.
+
+**Free vs paid line:**
+- **Free** — first search: address → confirm parcel → on-screen findings (intention-ordered, with sources).
+- **Paid ($25–30)** — the **PDF report** (printable, shareable summary of a run's findings with sources, dataset versions, retrieval dates, and outstanding questions) and saved shortlist beyond a small number of properties.
+
+**PDF report contents:** the report's findings, each with status, explanation, limitations, follow-up questions, source URL, dataset version, and retrieval date; the parcel outline and any evidence geometry; the buyer's selected intention and how it ordered the findings; a clear "what this map does not establish" statement. Must be reproducible from the persisted assessment snapshot (dataset + rule versions).
+
+**Implementation note:** start with browser print CSS for the PDF; move to server-side PDF (`@react-pdf/renderer` or a microservice) only if print quality or pagination becomes a blocker. See [TECH.md](./TECH.md).
+
+**Cost discipline:** the $25–30 price caps the per-report data cost. All v1 checks use free CC BY 4.0 data. Any future paid data layer (LINZ title, council property file, CoreLogic AVM) must either fit inside the envelope or be an explicit upsell — see the "Future — paid data layers" section in `progress.md`.
 
 ## Later additions
 

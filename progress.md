@@ -270,6 +270,7 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 Use plan todos for detail; this is a short pointer list.
 
+### Done
 - [x] Scaffold Next.js (App Router, TS, Tailwind, pinned deps)
 - [x] Supabase + PostGIS migrations (datasets, parcels, runs, findings)
 - [x] LINZ Auckland parcel/address path
@@ -281,13 +282,45 @@ Use plan todos for detail; this is a short pointer list.
 - [x] Choose among multiple parcel candidates
 - [x] Flood prone areas
 - [x] Unitary Plan zone
-- [ ] Import versions stay draft until the import finishes
+- [ ] Import versions stay draft until the import finishes (flood-prone + unitary plan already do this; overland flow predates it)
+
+### Next checks — free data, usefulness-ranked (not existence-ranked)
+*Research: slope dropped — relevant to builders, not to buyers of existing homes. Ranked by how often buyer-facing guidance mentions each.*
+
+- [ ] Coastal inundation / storm-tide — completes the flood/hazard trio. AC Flood Viewer, same ArcGIS hub as overland flow. CC BY 4.0.
+- [ ] Landslide susceptibility — post-2023-storms concern AC is pushing; newly published maps. High for Waitākere / North Shore hillsides.
+- [ ] AUP overlays — special character, historic heritage, significant ecological areas, volcanic viewshafts, precincts, designations. Extends the live zone check; same open-data hub as zones. Answers "can I demolish/alter".
+- [ ] Coastal erosion — AC GeoMaps. Medium relevance; pairs with coastal inundation.
+- [ ] Tsunami zones — AC Hazard Viewer. Medium; coastal evacuation.
+- [ ] NHCover landslide claims history — free NHC claims map; evidence of past events, complements landslide susceptibility.
+
+### Product / monetization (spec now, build later)
+- [ ] **Price the report at NZ$25–30.** Position as a pre-LIM screen (LIM is $375 / 10 days). See `docs/BRIEF.md`.
+- [ ] **PDF report generation** — printable, shareable summary of a run's findings with sources and dates. Start with browser print CSS (per `docs/TECH.md`); move to server PDF (`@react-pdf/renderer` or microservice) only if print quality/pagination demands it.
+- [ ] Paid report gate — free first search (address → confirm → on-screen findings); paywall the PDF export and saved shortlist beyond N properties.
+- [ ] Intention-aware ordering already in the report; make it the headline differentiator vs $49 hazard PDFs.
+
+### Future — paid data layers / APIs (not now; everything above is free CC BY 4.0)
+*Add only when a check's buyer value justifies the per-report cost. Price must still land at $25–30, so pass-through costs cap what we can use.*
+
+- [ ] **LINZ Record of Title** (covenants, easements, restrictions) — paid per title via Landonline. Top due-diligence item; would add a "title restrictions" check. Cost-per-title must fit inside the $25–30 envelope or be an upsell.
+- [ ] **Auckland Council property file** (consent history, original plans) — per-property fee, pass-through. Likely an upsell, not in the base report.
+- [ ] **CoreLogic / PropertyValue or QV data** — sales history, comparables, AVM. Competes with QV e-Report ($29.99); low differentiation for us. Probably out of lane.
+- [ ] **High-res LiDAR DEM** — only if we ever revisit slope/earthworks. Free 8 m DEM exists; high-res is commercial. Slope is currently out of scope, so this is parked.
+- [ ] **NHCover per-property claim detail** — the free claims map is in scope above; per-property claim docs may need an official channel.
+
+### Out of lane (route to a professional, do not build)
+- Meth contamination — needs physical testing.
+- Weathertightness / asbestos — needs building inspection.
+- Registered valuation — needs physical inspection.
+- Building consents correctness — needs council property file + site visit.
 
 ---
 
 ## Principles (reminder)
 
 - **No user-facing report queue** — sync assessment; imports offline.
-- **Four finding states** — never “all clear” on failure.
+- **Four finding states** — never "all clear" on failure.
 - **Parcel geometry**, not address point alone.
 - **Demo vs live** clearly labelled when fixtures exist.
+- **Usefulness, not existence** — add a layer because buyers look for it, not because the data exists.
