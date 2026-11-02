@@ -51,13 +51,25 @@ async function ensureDraftVersion() {
   return v.id;
 }
 
+async function markFailed(message) {
+  if (DRY || !versionId) return;
+  await sb.from("dataset_versions").update({
+    status: "failed",
+    notes: String(message).slice(0, 500),
+  }).eq("id", versionId);
+}
+
 async function fetchPage(resultOffset) {
   const url =
     `${FS_URL}/query?where=1%3D1&outFields=OBJECTID,FPA_ID,CanFill,Depth100y,RecordStatus&outSR=2193&returnGeometry=true&f=geojson` +
     `&resultOffset=${resultOffset}&resultRecordCount=${PAGE}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`ArcGIS ${res.status} at offset=${resultOffset}`);
-  return res.json();
+  const data = await res.json();
+  if (data.error) {
+    throw new Error(data.error.message || `ArcGIS error at offset=${resultOffset}`);
+  }
+  return data;
 }
 
 let total = 0;
@@ -65,56 +77,69 @@ let offset = 0;
 let versionId = null;
 if (!DRY) versionId = await ensureDraftVersion();
 
-while (true) {
-  const data = await fetchPage(offset);
-  const features = data.features ?? [];
-  if (features.length === 0) break;
-  if (DRY) {
-    total += features.length;
-    if (total <= PAGE && features[0]) {
-      const a = features[0].properties || features[0].attributes || {};
-      console.log(`sample: OBJECTID=${a.OBJECTID} FPA_ID=${a.FPA_ID} geom=${features[0].geometry?.type}`);
+try {
+  while (true) {
+    const data = await fetchPage(offset);
+    const features = data.features ?? [];
+    if (features.length === 0) break;
+    if (DRY) {
+      total += features.length;
+      if (total <= PAGE && features[0]) {
+        const a = features[0].properties || features[0].attributes || {};
+        console.log(`sample: OBJECTID=${a.OBJECTID} FPA_ID=${a.FPA_ID} geom=${features[0].geometry?.type}`);
+      }
+    } else {
+      const rows = features.map((f) => {
+        const props = f.properties ?? f.attributes ?? {};
+        return {
+          dataset_slug: SLUG,
+          source_feature_id: String(props.FPA_ID ?? props.OBJECTID ?? ""),
+          scenario: props.CanFill ? `Can fill in 1% AEP: ${props.CanFill}` : "Flood prone area",
+          attributes: props,
+          geom_geojson: JSON.stringify(f.geometry),
+          dataset_version_id: versionId,
+        };
+      });
+      const { error } = await sb.rpc("insert_hazard_geojson", { p_rows: rows });
+      if (error) throw new Error(error.message);
+      total += rows.length;
     }
-  } else {
-    const rows = features.map((f) => {
-      const props = f.properties ?? f.attributes ?? {};
-      return {
-        dataset_slug: SLUG,
-        source_feature_id: String(props.FPA_ID ?? props.OBJECTID ?? ""),
-        scenario: props.CanFill ? `Can fill in 1% AEP: ${props.CanFill}` : "Flood prone area",
-        attributes: props,
-        geom_geojson: JSON.stringify(f.geometry),
-        dataset_version_id: versionId,
-      };
-    });
-    const { error } = await sb.rpc("insert_hazard_geojson", { p_rows: rows });
-    if (error) {
-      await sb.from("dataset_versions").update({ status: "failed", notes: error.message }).eq("id", versionId);
-      console.error("insert error:", error.message);
-      process.exit(2);
-    }
-    total += rows.length;
+    console.log(`Imported/seen ${total} flood prone areas...`);
+    offset += features.length;
+    const more = data.exceededTransferLimit === true || features.length === PAGE;
+    if (!more) break;
   }
-  console.log(`Imported/seen ${total} flood prone areas...`);
-  if (features.length < PAGE) break;
-  offset += PAGE;
+} catch (err) {
+  await markFailed(err.message);
+  console.error(err.message);
+  process.exit(2);
 }
 
 if (!DRY) {
+  if (total === 0) {
+    await markFailed("import returned no features");
+    console.error("refusing to activate an empty import");
+    process.exit(3);
+  }
   const { error: activateErr } = await sb.from("dataset_versions").update({
     status: "active",
     row_count: total,
     geom_validated: true,
   }).eq("id", versionId);
   if (activateErr) {
+    await markFailed(activateErr.message);
     console.error("promote error:", activateErr.message);
     process.exit(3);
   }
-  await sb.from("dataset_versions")
+  const { error: retireErr } = await sb.from("dataset_versions")
     .update({ status: "retired" })
     .eq("dataset_slug", SLUG)
     .eq("status", "active")
     .neq("id", versionId);
+  if (retireErr) {
+    console.error("retire error:", retireErr.message);
+    process.exit(4);
+  }
 }
 
 console.log(`Done. Total flood prone areas: ${total}${DRY ? " (dry-run, not inserted)" : ""}`);

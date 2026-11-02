@@ -194,5 +194,10 @@ export default function MapView({
     };
   }, [parcelGeoJSON, evidenceGeoJSON, otherParcelsGeoJSON]);
 
-  return <div ref={containerRef} className={className ?? "h-96 w-full"} />;
+  return (
+    <div
+      ref={containerRef}
+      className={`relative overflow-hidden ${className ?? "h-96 w-full"}`}
+    />
+  );
 }

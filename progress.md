@@ -141,11 +141,15 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 - `morebeanz.com` was re-registered at DreamHost. The `.com` registry delegates it to DreamHost again, and the apex A record is Vercel's `216.198.79.1`.
 - Basemap fix from earlier today is on production (`360d62a`).
 
-**Verified:** typecheck ✅ / lint ✅ / test ✅ / manual ✅ (five overlapping parcels in the city centre; choosing the second parcel wrote that parcel id on the run; flood check returns `detected` with evidence where a polygon overlaps, and `not_detected` on 17 Shanaway Rise)
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (4 pass) / manual ✅ (desktop search → confirm → report, and the confirm page at 390px; five overlapping parcels, the chosen parcel id was the one saved) / CodeRabbit ✅ (1 major fixed, 1 minor deferred) / secrets not in git ✅ / pushed ✅
 
 **Next:** Auckland Unitary Plan zones — locate the zone polygon layer and licence, then add `planning.zone`.
 
 **Notes:** Flood prone areas are potential ponding from topography, assuming a blocked outlet. They are not a hydraulic flood model.
+
+**Notes (CodeRabbit):**
+- Major, fixed: the flood-prone import now rejects an ArcGIS error body, pages with `exceededTransferLimit`, refuses to activate an empty import, checks the retire result, and marks the version failed if paging throws. The 35,338-row import already completed before this hardening.
+- Minor, deferred: CodeRabbit asked for a static `NEXT_PUBLIC` LINZ key on the basemap. The Data Service key is rejected by the basemaps service (`API Key Invalid: malformed`). The map mints the short-lived key that service accepts. Left as-is.
 
 ---
 
