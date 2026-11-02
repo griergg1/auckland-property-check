@@ -9,16 +9,57 @@ type Props = {
   className?: string;
 };
 
+// LINZ Basemaps issues short-lived per-client keys: a "c" prefix plus a ULID.
+// The service accepts any freshly-minted one, so the browser generates its own
+// and reuses it for 30 days. The LINZ Data Service key does not work here.
+const BASEMAP_KEY_STORAGE = "linz-basemap-key";
+const BASEMAP_KEY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+function mintBasemapKey(): string {
+  let ts = Date.now();
+  let time = "";
+  for (let i = 0; i < 10; i++) {
+    time = CROCKFORD[ts & 31] + time;
+    ts = Math.floor(ts / 32);
+  }
+  const bytes = new Uint8Array(10);
+  crypto.getRandomValues(bytes);
+  let random = "";
+  for (let i = 0; i < 16; i++) {
+    const byte = bytes[Math.floor(i * 10 / 16)];
+    random += CROCKFORD[(i % 2 === 0 ? byte : byte >> 3) & 31];
+  }
+  return "c" + (time + random).toLowerCase();
+}
+
+function basemapKey(): string {
+  try {
+    const stored = localStorage.getItem(BASEMAP_KEY_STORAGE);
+    if (stored) {
+      const { key, mintedAt } = JSON.parse(stored) as { key: string; mintedAt: number };
+      if (key?.startsWith("c") && Date.now() - mintedAt < BASEMAP_KEY_TTL_MS) return key;
+    }
+  } catch {
+    // unreadable or unavailable storage — mint a fresh key below
+  }
+  const key = mintBasemapKey();
+  try {
+    localStorage.setItem(BASEMAP_KEY_STORAGE, JSON.stringify({ key, mintedAt: Date.now() }));
+  } catch {
+    // private mode — the key still works for this session
+  }
+  return key;
+}
+
 export default function MapView({ parcelGeoJSON, evidenceGeoJSON, className }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const linzApiKey = process.env.NEXT_PUBLIC_LINZ_API_KEY;
-    const linzTilesUrl = linzApiKey
-      ? `https://basemaps.linz.govt.nz/v1/aerial/{z}/{x}/{y}.webp?api=${linzApiKey}`
-      : "https://basemaps.linz.govt.nz/v1/aerial/{z}/{x}/{y}.webp";
+    const linzTilesUrl =
+      `https://basemaps.linz.govt.nz/v1/tiles/aerial/WebMercatorQuad/{z}/{x}/{y}.webp?api=${basemapKey()}`;
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: {
