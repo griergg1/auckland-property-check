@@ -28,11 +28,93 @@ const CHECKS = [
   },
 ];
 
-const STEPS = [
-  { n: "01", title: "Search", body: "Enter an Auckland street address." },
-  { n: "02", title: "Confirm parcel", body: "Choose the parcel when more than one contains the address." },
-  { n: "03", title: "Read findings", body: "Ordered by what you intend to do." },
-  { n: "04", title: "Compare & export", body: "Shortlist side by side; print with sources." },
+const AUDIENCES = [
+  {
+    label: "First-home buyer",
+    title: "Will this section work for me to live in?",
+    body: "Flood, coastal storm-tide, and the Unitary Plan zone — each intersected with the actual parcel, not the neighbourhood.",
+  },
+  {
+    label: "Renovator",
+    title: "Can I alter, and what limits apply?",
+    body: "The base zone names what's permitted, with a deep link to the ePlan rule chapter. Overlays and precincts are still being added.",
+  },
+  {
+    label: "Extender",
+    title: "Where on the section can I build out?",
+    body: "Overland flow paths and flood prone areas are mapped against the parcel, so the extension location and drainage questions are concrete.",
+  },
+  {
+    label: "Adding a dwelling",
+    title: "Is a second dwelling in the rules?",
+    body: "The zone check links to the chapter that sets dwelling density. Hazard findings are ordered first because they shape where a second unit can sit.",
+  },
+  {
+    label: "Vacant-land builder",
+    title: "What does the land itself show?",
+    body: "Overland flow, flood prone, and coastal storm-tide are the live hazard checks; terrain (slope) is still being added and will read as unavailable until then.",
+  },
+];
+
+const DIFFERENTIATORS = [
+  {
+    n: "01",
+    title: "Parcel-confirmed intersection",
+    body: "Every hazard is intersected with the confirmed LINZ parcel polygon — not an address point, and not a 500 m search circle. The finding is about the section, not the neighbourhood.",
+  },
+  {
+    n: "02",
+    title: "Intention-aware ordering",
+    body: "Findings are ordered by what you intend to do — live there, renovate, extend, add a dwelling, or build on vacant land. The question you came with is the one answered first.",
+  },
+  {
+    n: "03",
+    title: "Four-state honesty",
+    body: "Every finding is detected, not detected, unavailable, or needs review. We never say \"all clear\" when the data is missing — missing data is reported as unavailable, not as safe.",
+  },
+  {
+    n: "04",
+    title: "Source-cited, deterministic findings",
+    body: "Every finding links to its source and a retrieval date. The narrative is not AI-generated, so it cannot hallucinate a hazard that isn't on the map, or invent one that is.",
+  },
+  {
+    n: "05",
+    title: "Unitary Plan zone → rule chapter PDF",
+    body: "The zone check links directly to the ePlan H- or F-chapter PDF for the specific zone, not a generic zoning page.",
+  },
+  {
+    n: "06",
+    title: "Per-finding limitations",
+    body: "Each finding states what the map does NOT establish — not a site-specific flood assessment, not a floor-level or insurance answer, not a consent decision.",
+  },
+  {
+    n: "07",
+    title: "Auckland Council, source-first",
+    body: "Canonical AC layers are imported directly from the ArcGIS hub with verified CC BY 4.0 licences, recorded in a public dataset ledger. No third-party aggregation, no mystery sources.",
+  },
+];
+
+const JOURNEY = [
+  {
+    n: "01",
+    title: "Search",
+    body: "Enter an Auckland street address. The LINZ address service returns the matched address.",
+  },
+  {
+    n: "02",
+    title: "Confirm parcel",
+    body: "Choose the parcel when more than one contains the address. The check runs against the parcel polygon, not the address point.",
+  },
+  {
+    n: "03",
+    title: "Read findings",
+    body: "Findings are returned in the four states, ordered by your intention, each with its source and retrieval date.",
+  },
+  {
+    n: "04",
+    title: "Compare & export",
+    body: "Print the findings with sources, or run another address to compare shortlist properties side by side.",
+  },
 ];
 
 export default function SearchPage() {
@@ -81,9 +163,12 @@ export default function SearchPage() {
             <Mark />
             <span className="display text-[1.15rem] leading-none">morebeanz</span>
           </Link>
-          <nav className="label flex items-center gap-6">
-            <a href="#how" className="hover:text-ink">How it works</a>
-            <a href="#checks" className="hover:text-ink">What we check</a>
+          <nav className="label flex items-center gap-4 sm:gap-6">
+            <a href="#who" className="hidden sm:inline hover:text-ink">Who it&apos;s for</a>
+            <a href="#example" className="hidden sm:inline hover:text-ink">Example</a>
+            <a href="#checks" className="hidden sm:inline hover:text-ink">What we check</a>
+            <a href="#why" className="hidden sm:inline hover:text-ink">Why morebeanz</a>
+            <Link href="/about" className="hover:text-ink">About</Link>
           </nav>
         </div>
       </header>
@@ -93,13 +178,16 @@ export default function SearchPage() {
         <div className="mx-auto grid max-w-[1250px] grid-cols-1 md:grid-cols-2">
           {/* left: text + search */}
           <div className="border-hairline px-6 py-16 md:border-r md:px-10 md:py-24">
-            <p className="label">Research</p>
+            <p className="label">Auckland property research</p>
             <h1 className="display mt-4 text-[2.25rem] md:text-[3rem]">
-              Understand a property before you pay to investigate it.
+              Parcel-precise findings before you pay for the LIM.
             </h1>
             <p className="mt-5 max-w-md text-[0.95rem] leading-relaxed text-ink-muted">
-              Public Auckland sources, cited, and ordered by what you intend to do
-              with the place. Overland flow, flood prone areas, coastal storm-tide, and the Unitary Plan zone are live; other checks are still being added.
+              For first-home buyers, renovators, extenders, and people adding a
+              dwelling. Every hazard is intersected with the confirmed LINZ parcel —
+              not a 500 m search circle, and not an AI summary. Findings are
+              deterministic, source-cited, and ordered by what you intend to do with
+              the place. Not a LIM.
             </p>
 
             <form onSubmit={search} className="mt-8 max-w-md">
@@ -160,6 +248,117 @@ export default function SearchPage() {
         </div>
       </section>
 
+      {/* who should use this */}
+      <section id="who" className="border-b border-hairline">
+        <div className="mx-auto max-w-[1250px] px-4 py-16 md:py-24">
+          <p className="label">Who should use this</p>
+          <h2 className="display mt-3 text-[1.75rem] md:text-[2rem]">
+            Built around what you plan to do with the place.
+          </h2>
+          <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
+            The report is ordered by your intention. Pick the one that matches you —
+            the findings that matter most to that decision come first.
+          </p>
+          <ul className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-2 lg:grid-cols-3">
+            {AUDIENCES.map((a, i) => (
+              <li
+                key={a.label}
+                className={`border-hairline p-6 ${
+                  i % 3 !== 0 ? "lg:border-l" : ""
+                } ${i % 2 !== 0 ? "sm:border-l lg:border-l-0" : ""} ${
+                  i >= 1 ? "border-t sm:border-t-0" : ""
+                } ${i >= 2 ? "lg:border-t" : ""} ${i >= 3 ? "sm:border-t lg:border-t-0" : ""} ${i >= 4 ? "lg:border-t" : ""}`}
+              >
+                <p className="label">{a.label}</p>
+                <h3 className="display mt-3 text-[1.1rem]">{a.title}</h3>
+                <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">{a.body}</p>
+              </li>
+            ))}
+            <li className="border-hairline p-6 lg:border-l lg:border-t">
+              <p className="label">Not for</p>
+              <h3 className="display mt-3 text-[1.1rem]">Apartments &amp; cross-leases</h3>
+              <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">
+                The first version targets standalone houses and vacant residential
+                sections. Properties with ambiguous boundaries need a separate,
+                limited assessment.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      {/* worked example */}
+      <section id="example" className="border-b border-hairline">
+        <div className="mx-auto max-w-[1250px] px-4 py-16 md:py-24">
+          <p className="label">Worked example</p>
+          <h2 className="display mt-3 text-[1.75rem] md:text-[2rem]">
+            17 Shanaway Rise, Hillcrest — a real run.
+          </h2>
+          <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
+            This is the actual flow on a real Auckland address, not a mockup. The
+            parcel (LINZ id 5169096, 687 m²) is in the Hillcrest catchment. The
+            findings below are what the live checks returned on it on 2 Nov 2026.
+          </p>
+          <ol className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-2 lg:grid-cols-4">
+            {JOURNEY.map((s, i) => (
+              <li
+                key={s.n}
+                className={`border-hairline p-6 ${
+                  i % 4 !== 0 ? "lg:border-l" : ""
+                } ${i % 2 !== 0 ? "sm:border-l lg:border-l-0" : ""} ${
+                  i >= 1 ? "border-t sm:border-t-0" : ""
+                } ${i >= 2 ? "lg:border-t" : ""}`}
+              >
+                <p className="label">{s.n}</p>
+                <h3 className="display mt-3 text-[1.15rem]">{s.title}</h3>
+                <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+
+          {/* real finding from the live run on 2 Nov 2026 */}
+          <div className="mt-8 border border-hairline">
+            <div className="flex items-start justify-between gap-4 border-b border-hairline px-5 py-4">
+              <div>
+                <p className="label">Finding 04 · planning.zone</p>
+                <h3 className="display mt-1 text-[1.1rem] leading-snug">
+                  Zone: Residential — Mixed Housing Suburban Zone.
+                </h3>
+              </div>
+              <span className="stamp text-st-detected bg-st-detected-wash border-st-detected-line">
+                Detected
+              </span>
+            </div>
+            <div className="px-5 py-4 text-[0.9rem] leading-relaxed">
+              <p>
+                The Auckland Unitary Plan base zone layer intersects the confirmed
+                parcel polygon. The zone is named and linked to the ePlan rule
+                chapter (H4) that sets what&apos;s permitted, discretionary, and
+                non-complying on this section.
+              </p>
+              <p className="mt-3 text-ink-muted">
+                <span className="label mr-2">Limitations</span>
+                The base zone only. Overlays (special character, historic heritage,
+                significant ecological areas, volcanic viewshafts), precincts, and
+                designations are separate layers not yet assessed. This does not
+                establish height, activity status, or whether a specific consent
+                would be granted.
+              </p>
+              <p className="mt-4 border-t border-hairline pt-3 label">
+                Source · Auckland Unitary Plan base zones (CC BY 4.0) · retrieved
+                during the live run
+              </p>
+            </div>
+          </div>
+          <p className="label mt-4">
+            The same run also returned overland flow, flood prone areas, and coastal
+            storm-tide as not detected on this parcel — reported as not_detected,
+            not as &ldquo;all clear&rdquo;, because the four-state model never
+            converts missing or negative data into a blanket safe.
+          </p>
+        </div>
+      </section>
+
       {/* what we check */}
       <section id="checks" className="border-b border-hairline">
         <div className="mx-auto max-w-[1250px] px-4 py-16 md:py-24">
@@ -186,26 +385,50 @@ export default function SearchPage() {
         </div>
       </section>
 
-      {/* how it works */}
-      <section id="how" className="border-b border-hairline">
+      {/* why morebeanz */}
+      <section id="why" className="border-b border-hairline">
         <div className="mx-auto max-w-[1250px] px-4 py-16 md:py-24">
-          <p className="label">How it works</p>
-          <div className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((s, i) => (
-              <div
-                key={s.n}
+          <p className="label">Why morebeanz</p>
+          <h2 className="display mt-3 text-[1.75rem] md:text-[2rem]">
+            What a parcel-precise report gives you that a 500 m circle or an AI summary can&apos;t.
+          </h2>
+          <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
+            The difference is in the geometry, the honesty model, and the source
+            chain. None of this is marketing — it&apos;s how the checks are built.
+          </p>
+          <ul className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-2 lg:grid-cols-3">
+            {DIFFERENTIATORS.map((d, i) => (
+              <li
+                key={d.n}
                 className={`border-hairline p-6 ${
-                  i % 4 !== 0 ? "lg:border-l" : ""
+                  i % 3 !== 0 ? "lg:border-l" : ""
                 } ${i % 2 !== 0 ? "sm:border-l lg:border-l-0" : ""} ${
                   i >= 1 ? "border-t sm:border-t-0" : ""
-                } ${i >= 2 ? "lg:border-t" : ""}`}
+                } ${i >= 2 ? "lg:border-t" : ""} ${i >= 3 ? "sm:border-t lg:border-t-0" : ""} ${i >= 4 ? "lg:border-t" : ""} ${i >= 5 ? "lg:border-t" : ""}`}
               >
-                <p className="label">{s.n}</p>
-                <h3 className="display mt-3 text-[1.15rem]">{s.title}</h3>
-                <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">{s.body}</p>
-              </div>
+                <p className="label">{d.n}</p>
+                <h3 className="display mt-3 text-[1.1rem]">{d.title}</h3>
+                <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">{d.body}</p>
+              </li>
             ))}
-          </div>
+          </ul>
+        </div>
+      </section>
+
+      {/* pricing */}
+      <section className="border-b border-hairline">
+        <div className="mx-auto max-w-[1250px] px-4 py-16 md:py-24">
+          <p className="label">Pricing</p>
+          <h2 className="display mt-3 text-[1.75rem] md:text-[2rem]">
+            Free now. A paid PDF report is planned.
+          </h2>
+          <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
+            The on-screen report — search, confirm parcel, and the four-state findings
+            with sources — is free today. A printable, shareable PDF report is planned
+            at NZ$25–30, positioned as a pre-LIM screen (the Auckland Council LIM is
+            $375 / 10 working days). The paywall is not built yet; nothing is being
+            charged.
+          </p>
         </div>
       </section>
 
@@ -219,12 +442,18 @@ export default function SearchPage() {
                 <span className="display text-[1.15rem]">morebeanz</span>
               </div>
               <p className="label mt-3">Preliminary property research · Auckland</p>
+              <nav className="label mt-3 flex flex-wrap gap-x-4 gap-y-1">
+                <Link href="/about" className="hover:text-ink">About</Link>
+                <Link href="/support" className="hover:text-ink">Support</Link>
+                <Link href="/contact" className="hover:text-ink">Contact</Link>
+              </nav>
             </div>
             <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
-              Public Auckland map data. Not a LIM, not ownership confirmation, not an
-              approval guarantee. Overland flow, flood prone areas, coastal storm-tide,
-              and the Unitary Plan zone are the live checks; terrain and infrastructure
-              are not assessed yet.
+              Public Auckland map data, sourced first-party from the Auckland Council
+              ArcGIS hub and LINZ under CC BY 4.0. Not a LIM, not ownership
+              confirmation, not an approval guarantee. Overland flow, flood prone
+              areas, coastal storm-tide, and the Unitary Plan zone are the live
+              checks; terrain and infrastructure are not assessed yet.
             </p>
           </div>
           <hr className="rule mt-8" />

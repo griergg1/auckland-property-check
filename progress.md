@@ -130,6 +130,31 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-02 — Marketing copy overhaul + differentiators
+
+**Goal:** Copy/positioning pass — sharper hero, "who it's for", worked example, "Why morebeanz" differentiators, /about + /support + /contact, pricing line, footer attribution. No new data imports.
+
+**Done:**
+- Rewrote the home page hero (`web/src/app/page.tsx`): new value prop ("Parcel-precise findings before you pay for the LIM."), an explicit who-it's-for line, and the parcel-precise + intention-aware + four-state honesty trio stated up front. Kept the honest "Not a LIM" tone and the live search form.
+- Added a "Who should use this" section mapped to the intention model (first-home buyer, renovator, extender, add-a-dwelling, vacant-land builder), plus a "Not for — apartments & cross-leases" card so the scope limit is stated, not hidden.
+- Added a worked example using a real Auckland address (17 Shanaway Rise, Hillcrest). Ran the live assessment during the session to keep it honest: the parcel now resolves to LINZ 5169096 (687 m²) — not the 5039937 (1,163 m²) recorded in the 2026-11-01 log; the parcel data has shifted. The example shows the real returned finding (Zone: Residential — Mixed Housing Suburban, detected, H4 chapter) and notes the three hazard checks returned not_detected on this parcel, reported as not_detected — not as "all clear".
+- Added a "Why morebeanz" section with all seven differentiators (parcel-confirmed intersection, intention-aware ordering, four-state honesty, source-cited deterministic findings, zone → rule-chapter PDF, per-finding limitations, AC source-first). Framed as a factual contrast with a generic "500 m circle" / "AI summary" without naming Duly.
+- Added a pricing section: free now; paid PDF report planned at NZ$25–30 as a pre-LIM screen (LIM is $375 / 10 days). No paywall built.
+- Added `/about`, `/support`, `/contact` App Router pages. About: what morebeanz is, four principles, "what it is not" disclaimers. Support: 7-item FAQ (what it covers / doesn't cover, data currency, is-it-a-LIM, what "unavailable" means, parcel ambiguity, cost) + email. Contact: email link + what to include (a backend form is out of scope this session; email is direct and honest about that).
+- Updated the shared `SiteChrome` (`SiteHeader` + `SiteFooter`) to add About / Support / Contact nav links and source-first CC BY 4.0 attribution in the footer. Updated the home page inline header and footer to match. Coastal inundation now named in the footer live-checks line (it was already a live finding but the footer hadn't caught up).
+
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (4 pass; the live Supabase integration test passes with network, fails only under sandbox network restriction) / manual ✅ (home + /about + /support + /contact all return HTTP 200 and render at 390px mobile width via browser screenshot; golden address "17 Shanaway Rise, Hillcrest" run end-to-end search → confirm → report — flow unbroken by the new copy) / CodeRabbit ⏳ (run at closeout) / secrets not in git ✅
+
+**Next:** Landslide susceptibility — post-2023-storms concern AC is pushing; newly published maps. Same ArcGIS hub, same import hardening. (Unchanged from prior session; this was a copy session.)
+
+**Notes:**
+- The worked example had to be corrected mid-session: the 2026-11-01 log recorded parcel 5039937 (1,163 m²) with a detected overland flow path for "17 Shanaway Rise, Hillcrest", but the live parcels table now resolves that address point to parcel 5169096 (687 m²) with overland flow / flood prone / coastal all not_detected and only the zone detected. The example was rewritten to match the current live run rather than the stale log, per the prompt's "show a real finding, not a mockup" rule. The 5039937 → 5169096 shift suggests the LINZ parcel import or the `parcels_containing_point` result has changed since 2026-11-01; worth a one-off audit but not blocking.
+- The home page is still a single client component (`"use client"`) because of the search form. The new static sections (Who / Example / Why / Pricing) are inline in that client component rather than split out as server components — a future refactor could extract them, but it's not needed for this pass and would expand scope.
+- The contact page is an email link, not a form. A form needs a backend + email service (out of scope). The page says so plainly.
+- Out-of-scope items from the prompt were NOT started: mortgage calculator, what's-nearby, Kāinga Ora map, MCP server, auth, report sharing/PDF, coastal SLR scenarios. Logged in Backlog as "Marketing v2".
+
+---
+
 ## 2026-11-02 — Coastal inundation (storm-tide) check
 
 **Goal:** Add coastal inundation / storm-tide as the fourth hazard check, the next live finding.
@@ -318,6 +343,12 @@ Use plan todos for detail; this is a short pointer list.
 - [ ] NHCover landslide claims history — free NHC claims map; evidence of past events, complements landslide susceptibility.
 
 ### Product / monetization (spec now, build later)
+- [ ] **Marketing v2 — add mortgage calculator, what's-nearby, coastal SLR scenarios, report sharing/PDF.** Duly has all of these (per `docs/COMPETITOR_Duly.md`); they are bigger builds than a copy pass and were deliberately deferred this session. Sub-items:
+  - Mortgage calculator with live NZ bank rates (RatesAPI.nz is free). Low effort, high buyer value, differentiator-neutral.
+  - "What's nearby" amenity search (schools, parks, shops) from Ministry of Education + OpenStreetMap. Medium effort.
+  - Coastal inundation SLR scenarios (0.5 m / 1 m / 1.5 m / 2 m) — separate FeatureServices on the same AC ArcGIS hub as the present-day 1% AEP layer already imported. Low effort, direct parity move vs Duly's "2130 scenario" example.
+  - Report sharing / PDF export beyond the current print button. Medium effort; pairs with the paid-report paywall.
+  - Bookmarks / shared shortlist (already in backlog below).
 - [ ] **Price the report at NZ$25–30.** Position as a pre-LIM screen (LIM is $375 / 10 days). See `docs/BRIEF.md`.
 - [ ] **PDF report generation** — printable, shareable summary of a run's findings with sources and dates. Start with browser print CSS (per `docs/TECH.md`); move to server PDF (`@react-pdf/renderer` or microservice) only if print quality/pagination demands it.
 - [ ] Paid report gate — free first search (address → confirm → on-screen findings); paywall the PDF export and saved shortlist beyond N properties.

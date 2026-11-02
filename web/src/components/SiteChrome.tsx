@@ -31,15 +31,22 @@ export function Mark({ size = 28 }: { size?: number }) {
   );
 }
 
+/* Shared nav links — used by both the home page header and SiteHeader */
+const NAV_LINKS = [
+  { href: "/about", label: "About" },
+  { href: "/support", label: "Support" },
+  { href: "/contact", label: "Contact" },
+];
+
 export function SiteHeader({ active }: { active?: "home" | "shortlist" }) {
   return (
     <header className="border-b border-hairline">
       <div className="mx-auto flex max-w-[1250px] items-center justify-between px-4 py-4">
-          <Link href="/" className="flex items-center gap-3">
-            <Mark />
-            <span className="display text-[1.15rem] leading-none">morebeanz</span>
-          </Link>
-        <nav className="label flex items-center gap-6">
+        <Link href="/" className="flex items-center gap-3">
+          <Mark />
+          <span className="display text-[1.15rem] leading-none">morebeanz</span>
+        </Link>
+        <nav className="label flex items-center gap-4 sm:gap-6">
           <Link
             href="/"
             className={active === "home" ? "text-ink" : "hover:text-ink"}
@@ -48,10 +55,15 @@ export function SiteHeader({ active }: { active?: "home" | "shortlist" }) {
           </Link>
           <Link
             href="/shortlist/compare"
-            className={active === "shortlist" ? "text-ink" : "hover:text-ink"}
+            className={`hidden sm:inline ${active === "shortlist" ? "text-ink" : "hover:text-ink"}`}
           >
             Shortlist
           </Link>
+          {NAV_LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className="hover:text-ink">
+              {l.label}
+            </Link>
+          ))}
         </nav>
       </div>
     </header>
@@ -69,11 +81,18 @@ export function SiteFooter() {
               <span className="display text-[1.15rem]">morebeanz</span>
             </div>
             <p className="label mt-3">Preliminary property research · Auckland</p>
+            <nav className="label mt-3 flex flex-wrap gap-x-4 gap-y-1">
+              <Link href="/about" className="hover:text-ink">About</Link>
+              <Link href="/support" className="hover:text-ink">Support</Link>
+              <Link href="/contact" className="hover:text-ink">Contact</Link>
+            </nav>
           </div>
           <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
-            Public Auckland map data. Not a LIM, not ownership confirmation, not an
-            approval guarantee. Overland flow, flood prone areas, and the Unitary Plan
-            zone are the live checks; terrain and infrastructure are not assessed yet.
+            Public Auckland map data, sourced first-party from the Auckland Council
+            ArcGIS hub and LINZ under CC BY 4.0. Not a LIM, not ownership confirmation,
+            not an approval guarantee. Overland flow, flood prone areas, coastal
+            storm-tide, and the Unitary Plan zone are the live checks; terrain and
+            infrastructure are not assessed yet.
           </p>
         </div>
         <hr className="rule mt-8" />
