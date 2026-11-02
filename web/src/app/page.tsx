@@ -8,8 +8,8 @@ type Candidate = { id: string; label: string };
 const CHECKS = [
   {
     label: "Hazards · live",
-    title: "Overland flow",
-    body: "Auckland Council overland flow paths, intersected with the full parcel. Flood-prone areas and coastal hazards are not in this check yet.",
+    title: "Overland flow and flood prone areas",
+    body: "Auckland Council overland flow paths and flood prone areas, each intersected with the full parcel. Coastal hazards are not in this check yet.",
   },
   {
     label: "Planning · planned",
@@ -30,7 +30,7 @@ const CHECKS = [
 
 const STEPS = [
   { n: "01", title: "Search", body: "Enter an Auckland street address." },
-  { n: "02", title: "Confirm parcel", body: "Check the matched parcel on the map before the check runs." },
+  { n: "02", title: "Confirm parcel", body: "Choose the parcel when more than one contains the address." },
   { n: "03", title: "Read findings", body: "Ordered by what you intend to do." },
   { n: "04", title: "Compare & export", body: "Shortlist side by side; print with sources." },
 ];
@@ -99,7 +99,7 @@ export default function SearchPage() {
             </h1>
             <p className="mt-5 max-w-md text-[0.95rem] leading-relaxed text-ink-muted">
               Public Auckland sources, cited, and ordered by what you intend to do
-              with the place. Overland flow is live; other checks are still being added.
+              with the place. Overland flow and flood prone areas are live; other checks are still being added.
             </p>
 
             <form onSubmit={search} className="mt-8 max-w-md">
@@ -222,8 +222,8 @@ export default function SearchPage() {
             </div>
             <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
               Public Auckland map data. Not a LIM, not ownership confirmation, not an
-              approval guarantee. Overland flow is the live check; other layers are not
-              assessed yet.
+              approval guarantee. Overland flow and flood prone areas are the live checks;
+              planning, terrain, and infrastructure are not assessed yet.
             </p>
           </div>
           <hr className="rule mt-8" />

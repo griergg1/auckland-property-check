@@ -77,15 +77,20 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Status | `verified` — imported (1,176,253 features) |
 | Notes | Re-mapped 2019 using LiDAR DEM. Max record count 2000 per request → paginate. GeoJSON responses put attributes on `properties`, not `attributes`. Used for the `hazard.overland_flow` check. Existing rows may have an empty `source_feature_id` from the first import. |
 
-## Auckland Council — Flood Prone Areas (next candidate)
+## Auckland Council — Flood Prone Areas
 
 | Field | Value |
 |-------|-------|
 | Slug | `ac-flood-prone-areas` |
-| Source org | Auckland Council |
+| Source org | Auckland Council Healthy Waters |
 | Access method | ArcGIS REST FeatureServer |
-| Status | `pending` — locate FeatureServer URL and confirm licence before enabling |
-| Notes | Pair with overland flow for a fuller flood picture. |
+| Endpoint | `https://services1.arcgis.com/n4yPwebTjJCmXB6W/arcgis/rest/services/Flood_Prone_Areas/FeatureServer/0` |
+| Item | [Flood Prone Areas](https://www.arcgis.com/home/item.html?id=0be75c47bc1a4f28b9a7745a3eba5cbf) |
+| Licence | Auckland Council Open Data — CC BY 4.0. Item text: Creative Commons, for internal and external use. |
+| Attribution | "Auckland Council Healthy Waters — Flood Prone Areas" |
+| Count | 35,338 polygons (queried 2026-11-02) |
+| Status | `verified` — imported 35,338 polygons. Version stays `draft` until the last page succeeds, then `active`. |
+| Notes | Potential ponding areas from topography, assuming a blocked outlet. Not a hydraulic flood model. Used for the `hazard.flood_prone` check. |
 
 ## Auckland Council — Unitary Plan zones (planning, later)
 

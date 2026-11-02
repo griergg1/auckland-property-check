@@ -46,6 +46,7 @@ function ConfirmContent() {
   const [error, setError] = useState<string | null>(null);
   const [intention, setIntention] = useState("live");
   const [submitting, setSubmitting] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!addressId) {
@@ -62,7 +63,9 @@ function ConfirmContent() {
         });
         if (!res.ok) throw new Error("failed to load parcels");
         const data = await res.json();
-        setCandidates(data.candidates ?? []);
+        const next = (data.candidates ?? []) as ParcelCandidate[];
+        setCandidates(next);
+        setSelectedId(next[0]?.id ?? null);
       } catch (e: any) {
         setError(e.message ?? "error");
       } finally {
@@ -92,11 +95,17 @@ function ConfirmContent() {
     }
   }
 
-  const parcel = candidates[0];
+  const parcel = candidates.find((c) => c.id === selectedId) ?? candidates[0];
   const ambiguous = candidates.length > 1;
   const parcelFeature = parcel?.geometry
     ? ({ type: "Feature", geometry: parcel.geometry, properties: {} } as GeoJSON.Feature)
     : null;
+  const otherParcels: GeoJSON.FeatureCollection = {
+    type: "FeatureCollection",
+    features: candidates
+      .filter((c) => c.id !== parcel?.id && c.geometry)
+      .map((c) => ({ type: "Feature", geometry: c.geometry, properties: {} })),
+  };
 
   return (
     <div className="flex min-h-full flex-col">
@@ -113,14 +122,47 @@ function ConfirmContent() {
         {loading && <p className="mt-8 text-ink-muted">Loading parcel…</p>}
         {error && <p className="mt-8 text-st-detected">{error}</p>}
 
+        {!loading && !error && candidates.length === 0 && (
+          <p className="mt-8 max-w-xl text-ink-muted">
+            No land parcel contains this address point. The address may sit on a road or
+            outside the imported Auckland parcel coverage.
+          </p>
+        )}
+
         {!loading && parcel && (
           <div className="mt-10 grid grid-cols-1 border border-hairline lg:grid-cols-2">
             {/* left: map + parcel facts */}
             <div className="border-hairline p-5 lg:border-r">
               <MapView
                 parcelGeoJSON={parcelFeature}
+                otherParcelsGeoJSON={ambiguous ? otherParcels : null}
                 className="h-[360px] w-full border border-hairline"
               />
+              {ambiguous && (
+                <ul className="mt-4 border border-hairline">
+                  {candidates.map((c) => {
+                    const selected = c.id === parcel.id;
+                    return (
+                      <li key={c.id} className="border-b border-hairline last:border-b-0">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedId(c.id)}
+                          className={`flex w-full items-center justify-between px-3 py-2 text-left ${
+                            selected ? "border-l-[3px] border-accent bg-surface" : "border-l-[3px] border-transparent"
+                          }`}
+                        >
+                          <span className="font-mono text-[0.8rem]">
+                            {c.sourceParcelId ?? "Parcel"}
+                          </span>
+                          <span className="text-[0.85rem] text-ink-muted">
+                            {c.areaM2 ? `${c.areaM2.toLocaleString()} m²` : "area unknown"}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
               <dl className="mt-4 text-[0.9rem]">
                 <div className="flex justify-between border-b border-hairline py-2">
                   <dt className="label">Parcel ID</dt>
@@ -140,8 +182,8 @@ function ConfirmContent() {
                 </div>
               </dl>
               {ambiguous && (
-                <p className="stamp mt-4 text-st-review bg-st-review-wash border-st-review-line">
-                  Needs review · {candidates.length} candidate parcels
+                <p className="stamp mt-4 border-st-review-line bg-st-review-wash text-st-review">
+                  Needs review · {candidates.length} parcels contain this address. Choose one.
                 </p>
               )}
             </div>

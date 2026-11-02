@@ -57,12 +57,12 @@ function ReportContent() {
     })();
   }, [runId]);
 
-  const firstEvidence = findings.find((f) => f.evidenceGeometry)?.evidenceGeometry
-    ? ({
-        type: "Feature",
-        geometry: findings.find((f) => f.evidenceGeometry)!.evidenceGeometry,
-        properties: {},
-      } as GeoJSON.Feature)
+  const activeFinding = expanded ? findings.find((f) => f.id === expanded) : undefined;
+  const evidenceGeometry = activeFinding
+    ? activeFinding.evidenceGeometry
+    : findings.find((f) => f.evidenceGeometry)?.evidenceGeometry;
+  const evidenceFeature = evidenceGeometry
+    ? ({ type: "Feature", geometry: evidenceGeometry, properties: {} } as GeoJSON.Feature)
     : null;
 
   // simple intention-aware ordering: findings that mention the intention first
@@ -193,7 +193,7 @@ function ReportContent() {
             <div className="lg:sticky lg:top-8 lg:self-start">
               <MapView
                 parcelGeoJSON={parcelGeometries[0] ?? null}
-                evidenceGeoJSON={firstEvidence}
+                evidenceGeoJSON={evidenceFeature}
                 className="h-[420px] w-full border border-hairline"
               />
               <p className="label mt-2">

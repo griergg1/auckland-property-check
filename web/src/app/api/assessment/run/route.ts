@@ -4,7 +4,7 @@ import {
   AssessmentRunResponse,
 } from "@/lib/schemas";
 import { supabaseServer } from "@/lib/supabase/server";
-import { runAssessmentForParcel, RULE_VERSION } from "@/lib/assessment";
+import { runChecksForParcel, RULE_VERSION } from "@/lib/assessment";
 
 export async function POST(request: Request) {
   const body = AssessmentRunRequest.safeParse(await request.json());
@@ -36,39 +36,41 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error?.message ?? "run failed" }, { status: 500 });
   }
 
-  // Run checks for each parcel
+  // Run every live check for each confirmed parcel.
   const findings = [];
   for (const parcelId of parcelIds) {
-    const finding = await runAssessmentForParcel(sb, parcelId, intention);
-    const { data: inserted, error: insertErr } = await sb
-      .from("findings")
-      .insert({
-        run_id: run.id,
-        check_id: finding.checkId,
-        rule_version: finding.ruleVersion,
-        status: finding.status,
-        title: finding.title,
-        explanation: finding.explanation,
-        limitations: finding.limitations,
-        follow_up_questions: finding.followUpQuestions,
-        source_url: finding.sourceUrl,
-        dataset_version_id: finding.datasetVersionId,
-        feature_ids: finding.featureIds,
-        evidence_geom: finding.evidenceGeometry,
-        retrieval_date: finding.retrievalDate,
-        intentions: finding.intentions,
-      })
-      .select("id")
-      .single();
-    if (insertErr || !inserted) {
-      // Persistence failure: fail the run rather than report a finding with no id.
-      await sb.from("assessment_runs").delete().eq("id", run.id);
-      return NextResponse.json(
-        { error: insertErr?.message ?? "failed to persist finding" },
-        { status: 500 },
-      );
+    const checks = await runChecksForParcel(sb, parcelId, intention);
+    for (const finding of checks) {
+      const { data: inserted, error: insertErr } = await sb
+        .from("findings")
+        .insert({
+          run_id: run.id,
+          check_id: finding.checkId,
+          rule_version: finding.ruleVersion,
+          status: finding.status,
+          title: finding.title,
+          explanation: finding.explanation,
+          limitations: finding.limitations,
+          follow_up_questions: finding.followUpQuestions,
+          source_url: finding.sourceUrl,
+          dataset_version_id: finding.datasetVersionId,
+          feature_ids: finding.featureIds,
+          evidence_geom: finding.evidenceGeometry,
+          retrieval_date: finding.retrievalDate,
+          intentions: finding.intentions,
+        })
+        .select("id")
+        .single();
+      if (insertErr || !inserted) {
+        // Persistence failure: fail the run rather than report a finding with no id.
+        await sb.from("assessment_runs").delete().eq("id", run.id);
+        return NextResponse.json(
+          { error: insertErr?.message ?? "failed to persist finding" },
+          { status: 500 },
+        );
+      }
+      findings.push({ ...finding, id: inserted.id });
     }
-    findings.push({ ...finding, id: inserted.id });
   }
 
   const { error: completeErr } = await sb

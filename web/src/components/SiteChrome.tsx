@@ -72,8 +72,8 @@ export function SiteFooter() {
           </div>
           <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
             Public Auckland map data. Not a LIM, not ownership confirmation, not an
-            approval guarantee. Overland flow is the live check; other layers are not
-            assessed yet.
+            approval guarantee. Overland flow and flood prone areas are the live checks;
+            planning, terrain, and infrastructure are not assessed yet.
           </p>
         </div>
         <hr className="rule mt-8" />

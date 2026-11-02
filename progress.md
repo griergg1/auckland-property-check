@@ -4,7 +4,7 @@ Living record of what was done, what’s next, and **session rituals** so work s
 
 **Related docs:** [docs/BRIEF.md](docs/BRIEF.md) · [docs/TECH.md](docs/TECH.md) · [docs/MARKET_RESEARCH.md](docs/MARKET_RESEARCH.md) · Plan: `.cursor/plans/` or team copy of implementation plan
 
-**Current target phase:** Phase 0.5 PoC — live on Vercel with real parcels + overland flow. Custom domain DNS still pending.
+**Current target phase:** Phase 0.5 PoC — live on Vercel with parcels, overland flow, and flood prone areas. `morebeanz.com` is registered again and delegated to DreamHost.
 
 ---
 
@@ -130,6 +130,25 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-02 — Parcel choice and flood prone areas
+
+**Goal:** Let a visitor choose when several parcels contain the address, then add flood prone areas as the second live check.
+
+**Done:**
+- Confirm page lists every parcel that contains the address. The selected row is the one that runs. Other outlines stay on the map, lighter than the selection.
+- Imported 35,338 Auckland Council flood prone areas. The dataset version stayed draft until the last page, then became active.
+- A report now returns two findings: overland flow and flood prone areas. Opening a finding shows that finding's evidence on the map.
+- `morebeanz.com` was re-registered at DreamHost. The `.com` registry delegates it to DreamHost again, and the apex A record is Vercel's `216.198.79.1`.
+- Basemap fix from earlier today is on production (`360d62a`).
+
+**Verified:** typecheck ✅ / lint ✅ / test ✅ / manual ✅ (five overlapping parcels in the city centre; choosing the second parcel wrote that parcel id on the run; flood check returns `detected` with evidence where a polygon overlaps, and `not_detected` on 17 Shanaway Rise)
+
+**Next:** Auckland Unitary Plan zones — locate the zone polygon layer and licence, then add `planning.zone`.
+
+**Notes:** Flood prone areas are potential ponding from topography, assuming a blocked outlet. They are not a hydraulic flood model.
+
+---
+
 ## 2026-11-01 — Closeout (real-data PoC)
 
 **Goal:** Close the session cleanly so the next one can start from a pushed, reviewed tree.
@@ -228,9 +247,10 @@ Use plan todos for detail; this is a short pointer list.
 - [x] PoC UI: search → confirm → report
 - [x] Vitest: rear-of-section intersection case
 - [x] CodeRabbit + git push in every closeout once code exists
-- [ ] `morebeanz.com` DNS
-- [ ] Choose among multiple parcel candidates
-- [ ] Next datasets: flood prone areas, unitary plan zone
+- [x] `morebeanz.com` DNS (re-registered; apex A record points at Vercel)
+- [x] Choose among multiple parcel candidates
+- [x] Flood prone areas
+- [ ] Next dataset: unitary plan zone
 - [ ] Import versions stay draft until the import finishes
 
 ---
