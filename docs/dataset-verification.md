@@ -114,6 +114,30 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Status | `verified` — endpoint, licence (CC BY 4.0), and coverage confirmed 2026-11-02. Imported 139,488 operative zone polygons (filtered to `VERSIONSTATUS=4`); version stayed `draft` until the last page succeeded, then `active`. |
 | Notes | `ZONE` is a coded value decoded client-side to the zone name (e.g. 18 → Residential - Mixed Housing Suburban Zone). The H-chapter rule PDF URL is built from the zone name. The import excludes Proposed/Decision/Withdrawn records (`VERSIONSTATUS≠4`) so the check names the current zone, not a plan-change version. Used for the `planning.zone` check, which intersects the confirmed parcel (not the address point). |
 
+## Auckland Council — Coastal Inundation 1% AEP (storm-tide)
+
+| Field | Value |
+|-------|-------|
+| Slug | `ac-coastal-inundation` |
+| Source org | Auckland Council (Resilient Land & Coasts, Infrastructure and Environmental Services) |
+| Layer | Coastal Inundation — 1% AEP (Coastal Storm Inundation dataset; present-day sea level, no SLR) |
+| Item ID | `e1b4f3e57dc64b6395098a17ac979eeb` |
+| Item URL | https://www.arcgis.com/home/item.html?id=e1b4f3e57dc64b6395098a17ac979eeb |
+| Data type | Polygon (MultiPolygon) |
+| CRS | NZTM2000 (EPSG:2193) |
+| Access method | ArcGIS REST FeatureServer (no auth, open data) |
+| Endpoint | `https://services1.arcgis.com/n4yPwebTjJCmXB6W/ArcGIS/rest/services/Coastal_Inundation_1_AEP/FeatureServer/0` |
+| Query example | `.../FeatureServer/0/query?where=1=1&outFields=OBJECTID,Hazard,ARI_years,AEP_percent,WaveSetUp,SeaLevelRiseScenario,ModelType,Status&outSR=2193&returnGeometry=true&f=geojson&resultRecordCount=2000` |
+| Max record count | 2000 per request → paginate with `resultOffset`; honour `exceededTransferLimit` |
+| Fields | `OBJECTID`, `Hazard` ("Coastal Inundation"), `ARI_years` (100), `AEP_percent` ("1.0 %"), `WaveSetUp`, `WaveRunUp`, `SeaLevelRiseScenario` ("N/A" for present-day), `ModelType` ("Static"), `Status` ("Current"), `DocLink`, `GlobalID`, `Shape__Area`, `Shape__Length` |
+| Licence | Auckland Council Open Data — CC BY 4.0. Item `licenseInfo`: "available to the public Under Creative Commons license." |
+| Attribution | "Auckland Council — Coastal Inundation 1% AEP (CC BY 4.0)" |
+| Source / rule page | Auckland Council flood-check page: https://www.aucklandcouncil.govt.nz/en/environment/looking-after-aucklands-water/flooding-blockages/check-flood-risks-before-buy-build.html · Flood Viewer: https://experience.arcgis.com/experience/cbde7f2134404f4d90adce5396a0a630/ · Technical report: Auckland Council TR2020/24 "Auckland's exposure to coastal inundation by storm-tides and waves" |
+| Update cadence | Ad hoc, when improved data becomes available |
+| Count | 689 polygons (queried 2026-11-02) |
+| Status | `verified` — endpoint, licence (CC BY 4.0), and coverage confirmed 2026-11-02. Version stays `draft` until the last page succeeds, then `active`. |
+| Notes | The 1% AEP (100-year return period, present-day sea level) is the standard planning scenario shown on the Auckland Council Flood Viewer. Sea-level-rise variants are separate FeatureServices and are out of scope for this check. The dataset maps the extent of sea-water coverage from sustained coastal storm-tide flooding (joint probability of high tide, storm surge, and wave setup); wave runup, overtopping, and freshwater flooding are not included. Used for the `hazard.coastal_inundation` check, which intersects the confirmed parcel (not the address point). |
+
 ---
 
 ## Import plan (PoC → MVP)

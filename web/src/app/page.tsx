@@ -8,8 +8,8 @@ type Candidate = { id: string; label: string };
 const CHECKS = [
   {
     label: "Hazards · live",
-    title: "Overland flow and flood prone areas",
-    body: "Auckland Council overland flow paths and flood prone areas, each intersected with the full parcel. Coastal hazards are not in this check yet.",
+    title: "Overland flow, flood prone, coastal inundation",
+    body: "Auckland Council overland flow paths, flood prone areas, and coastal storm-tide (1% AEP) extent, each intersected with the full parcel.",
   },
   {
     label: "Planning · live",
@@ -99,7 +99,7 @@ export default function SearchPage() {
             </h1>
             <p className="mt-5 max-w-md text-[0.95rem] leading-relaxed text-ink-muted">
               Public Auckland sources, cited, and ordered by what you intend to do
-              with the place. Overland flow, flood prone areas, and the Unitary Plan zone are live; other checks are still being added.
+              with the place. Overland flow, flood prone areas, coastal storm-tide, and the Unitary Plan zone are live; other checks are still being added.
             </p>
 
             <form onSubmit={search} className="mt-8 max-w-md">
@@ -222,8 +222,9 @@ export default function SearchPage() {
             </div>
             <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
               Public Auckland map data. Not a LIM, not ownership confirmation, not an
-              approval guarantee. Overland flow, flood prone areas, and the Unitary Plan
-              zone are the live checks; terrain and infrastructure are not assessed yet.
+              approval guarantee. Overland flow, flood prone areas, coastal storm-tide,
+              and the Unitary Plan zone are the live checks; terrain and infrastructure
+              are not assessed yet.
             </p>
           </div>
           <hr className="rule mt-8" />
