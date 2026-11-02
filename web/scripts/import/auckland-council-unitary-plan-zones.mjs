@@ -191,8 +191,10 @@ async function markFailed(message) {
 }
 
 async function fetchPage(resultOffset) {
+  // VERSIONSTATUS=4 is Operative. Exclude Proposed/Decision/Withdrawn records so the
+  // check names the current zone, not a plan-change version.
   const url =
-    `${FS_URL}/query?where=1%3D1&outFields=OBJECTID,NAME,ZONE,GROUPZONE&outSR=2193&returnGeometry=true&f=geojson` +
+    `${FS_URL}/query?where=VERSIONSTATUS%3D4&outFields=OBJECTID,NAME,ZONE,GROUPZONE,VERSIONSTATUS&outSR=2193&returnGeometry=true&f=geojson` +
     `&resultOffset=${resultOffset}&resultRecordCount=${PAGE}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`ArcGIS ${res.status} at offset=${resultOffset}`);

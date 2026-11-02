@@ -111,8 +111,8 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Attribution | "Auckland Council — Unitary Plan Base Zone (CC BY 4.0)" |
 | Rule pages | Auckland Unitary Plan ePlan — Chapter H Zones PDFs at `https://unitaryplan.aucklandcouncil.govt.nz/` (index: `data/operative/data.xml`). Coastal zones are in Chapter F. |
 | Update cadence | As updated; the ePlan viewer is the live text source |
-| Status | `verified` — endpoint, licence (CC BY 4.0), and coverage confirmed 2026-11-02. Import pending; version stays `draft` until the last page succeeds, then `active`. |
-| Notes | `ZONE` is a coded value decoded client-side to the zone name (e.g. 18 → Residential - Mixed Housing Suburban Zone). The H-chapter rule PDF URL is built from the zone name. Used for the `planning.zone` check, which intersects the confirmed parcel (not the address point). |
+| Status | `verified` — endpoint, licence (CC BY 4.0), and coverage confirmed 2026-11-02. Imported 139,488 operative zone polygons (filtered to `VERSIONSTATUS=4`); version stayed `draft` until the last page succeeded, then `active`. |
+| Notes | `ZONE` is a coded value decoded client-side to the zone name (e.g. 18 → Residential - Mixed Housing Suburban Zone). The H-chapter rule PDF URL is built from the zone name. The import excludes Proposed/Decision/Withdrawn records (`VERSIONSTATUS≠4`) so the check names the current zone, not a plan-change version. Used for the `planning.zone` check, which intersects the confirmed parcel (not the address point). |
 
 ---
 
