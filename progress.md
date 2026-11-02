@@ -130,6 +130,28 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-02 — Coastal inundation (storm-tide) check
+
+**Goal:** Add coastal inundation / storm-tide as the fourth hazard check, the next live finding.
+
+**Done:**
+- Located the canonical Auckland Council coastal storm inundation layer: Coastal Inundation 1% AEP (present-day sea level), ArcGIS FeatureServer item `e1b4f3e57dc64b6395098a17ac979eeb`, CC BY 4.0 (item `licenseInfo`: "available to the public Under Creative Commons license"). Recorded endpoint, item id, fields, CRS (EPSG:2193), max record count (2000), and rule/source page URL in `docs/dataset-verification.md` under slug `ac-coastal-inundation`. The 1% AEP (100-year return period, present-day) is the standard planning scenario shown on the AC Flood Viewer; sea-level-rise variants are separate FeatureServices and out of scope.
+- Imported 689 storm-tide polygons into `public.hazard_features` under slug `ac-coastal-inundation`. The import follows the flood-prone hardening: reject an ArcGIS error body, honour `exceededTransferLimit`, refuse to activate an empty import, mark the version failed on throw, and keep the version `draft` until the last page succeeds, then `active`. The first attempt timed out at page size 500 (large coastal polygons exceeded the Postgres statement timeout); the failed version was correctly marked `failed`, and re-running at page size 50 succeeded and retired the prior active version.
+- Added `assess_coastal_inundation` SQL function. It intersects the confirmed parcel (not the address point), returns one of the four finding states, names the scenario and return period (1% AEP, 100-year, present-day sea level) where the source carries one, and links to the AC flood-check page. When the layer is missing the result is `unavailable`, not clear. The limitations state what the map does not establish: not a site-specific flood assessment, not a floor-level or insurance answer; wave runup, overtopping, sea-level-rise scenarios, and freshwater flooding are not included.
+- Wired it as the fourth finding in `runChecksForParcel` (overland flow, flood prone, coastal inundation, Unitary Plan zone). The report renders the fourth finding automatically.
+- Updated home and footer copy to mark coastal inundation live, only after the version was active.
+
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (4 pass) / manual ✅ (Mission Bay coastal parcel 6741703 → detected, scenario "Coastal storm-tide 1.0 % AEP (100-year return period) (present-day sea level)"; Hillcrest inland parcel 5039937 → not_detected) / CodeRabbit ✅ (0 findings) / secrets not in git ✅ / pushed ✅
+
+**Next:** Landslide susceptibility — post-2023-storms concern AC is pushing; newly published maps. High for Waitākere / North Shore hillsides. Same ArcGIS hub, same import hardening.
+
+**Notes:**
+- The 1% AEP layer has 689 polygons; the present-day scenario uses `SeaLevelRiseScenario="N/A"`. Sea-level-rise variants (0.5 m, 1 m, 1.5 m, 2 m) are separate FeatureServices and are not imported; a future "coastal inundation + SLR" check could add them.
+- Coastal inundation mapping is not available for some Parakai-Helensville scenarios (hydrodynamic modelling gaps); those parcels will return `not_detected` within checked coverage, which is honest.
+- The first import attempt's statement-timeout failure was caught by the `markFailed` path and left a `failed` version (not `retired`); the second attempt created a fresh `draft`, succeeded, and retired only the prior `active` version. The `failed` row remains for audit.
+
+---
+
 ## 2026-11-02 — Auckland Unitary Plan zone check
 
 **Goal:** Add Auckland Unitary Plan zones as the `planning.zone` check, the third live finding.
@@ -282,12 +304,13 @@ Use plan todos for detail; this is a short pointer list.
 - [x] Choose among multiple parcel candidates
 - [x] Flood prone areas
 - [x] Unitary Plan zone
-- [ ] Import versions stay draft until the import finishes (flood-prone + unitary plan already do this; overland flow predates it)
+- [x] Coastal inundation / storm-tide
+- [ ] Import versions stay draft until the import finishes (flood-prone + unitary plan + coastal inundation already do this; overland flow predates it)
 
 ### Next checks — free data, usefulness-ranked (not existence-ranked)
 *Research: slope dropped — relevant to builders, not to buyers of existing homes. Ranked by how often buyer-facing guidance mentions each.*
 
-- [ ] Coastal inundation / storm-tide — completes the flood/hazard trio. AC Flood Viewer, same ArcGIS hub as overland flow. CC BY 4.0.
+- [x] Coastal inundation / storm-tide — completes the flood/hazard trio. AC Flood Viewer, same ArcGIS hub as overland flow. CC BY 4.0.
 - [ ] Landslide susceptibility — post-2023-storms concern AC is pushing; newly published maps. High for Waitākere / North Shore hillsides.
 - [ ] AUP overlays — special character, historic heritage, significant ecological areas, volcanic viewshafts, precincts, designations. Extends the live zone check; same open-data hub as zones. Answers "can I demolish/alter".
 - [ ] Coastal erosion — AC GeoMaps. Medium relevance; pairs with coastal inundation.
