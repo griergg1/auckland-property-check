@@ -222,9 +222,12 @@ does not block on 1.1 — it reorders.
 The user has said: don't worry about the paid layer right now. There is
 one v1.5 decision that depends on it: **the shortlist-compare
 paywall line** (4.1). The brief says "free first search; account for
-shortlist beyond a small number." Pin the number before building 4.1
-(e.g. compare up to 3 properties free; more requires the paid PDF). This
-does not need the paid tier to exist — only the number to be decided.
+shortlist beyond a small number."
+
+**Decision (2026-11-02): free users can compare up to 3 properties
+side by side. Comparing 4 or more requires the paid PDF.** This does not
+need the paid tier to exist — only the number to be decided, and it now
+is. Build 4.1 against this limit.
 
 ---
 
@@ -254,7 +257,10 @@ is backed by real findings, not promised ones.
 
 ## 7. Open question for you
 
-One decision before Session N+1 starts: **the shortlist-compare paywall
+~~One decision before Session N+1 starts: **the shortlist-compare paywall
 line (§5).** How many properties can a free user compare side by side
 before the paid PDF is required — 3? 5? Unlimited free, paywall only on
-the PDF? Pin the number and 4.1 builds clean.
+the PDF? Pin the number and 4.1 builds clean.~~
+
+**Resolved 2026-11-02: 3 properties free; 4+ requires the paid PDF.** See §5.
+No open questions remain for v1.5.
