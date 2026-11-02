@@ -3,7 +3,7 @@ import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 
 export const metadata: Metadata = {
   title: "Contact — morebeanz",
-  description: "Email morebeanz. Preliminary Auckland property research, sourced first-party from Auckland Council and LINZ.",
+  description: "Email morebeanz. A free Auckland property check, sourced from the council and LINZ.",
 };
 
 export default function ContactPage() {
@@ -16,8 +16,8 @@ export default function ContactPage() {
           Email is the fastest way to reach us.
         </h1>
         <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
-          A contact form would need a backend we have not built yet. For now,
-          email is direct and we read it.
+          There&apos;s no contact form yet — it would need a backend we haven&apos;t
+          built. For now, email is direct, and we read it.
         </p>
 
         <section className="mt-10 border border-hairline p-6">
@@ -34,12 +34,12 @@ export default function ContactPage() {
             <li>— The Auckland address you ran (or tried to run).</li>
             <li>— What you expected to see, and what you saw instead.</li>
             <li>— The run id from the report page, if you have one.</li>
-            <li>— Which intention you selected (live / renovate / extend / add a dwelling / vacant build).</li>
+            <li>— Which one you picked: live there, renovate, extend, add a dwelling, or build on vacant land.</li>
           </ul>
         </section>
 
         <p className="label mt-10">
-          There is no contact form yet. Please do not send sensitive personal
+          There is no contact form yet. Please don&apos;t send sensitive personal
           information by email.
         </p>
       </main>

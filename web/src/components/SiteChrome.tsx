@@ -88,11 +88,11 @@ export function SiteFooter() {
             </nav>
           </div>
           <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
-            Public Auckland map data, sourced first-party from the Auckland Council
-            ArcGIS hub and LINZ under CC BY 4.0. Not a LIM, not ownership confirmation,
-            not an approval guarantee. Overland flow, flood prone areas, coastal
-            storm-tide, and the Unitary Plan zone are the live checks; terrain and
-            infrastructure are not assessed yet.
+            Council map data, pulled straight from the Auckland Council and LINZ
+            data hubs under a free-to-reuse licence. Not a LIM, not ownership
+            confirmation, not a promise you&apos;ll get consent. Flood, coastal,
+            and the Unitary Plan zone are live today; slope and stormwater are
+            still coming.
           </p>
         </div>
         <hr className="rule mt-8" />
