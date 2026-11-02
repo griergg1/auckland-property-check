@@ -92,15 +92,27 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Status | `verified` — imported 35,338 polygons. Version stays `draft` until the last page succeeds, then `active`. |
 | Notes | Potential ponding areas from topography, assuming a blocked outlet. Not a hydraulic flood model. Used for the `hazard.flood_prone` check. |
 
-## Auckland Council — Unitary Plan zones (planning, later)
+## Auckland Council — Unitary Plan Base Zone
 
 | Field | Value |
 |-------|-------|
 | Slug | `ac-unitary-plan-zones` |
-| Source org | Auckland Council |
-| Access method | ArcGIS REST (MapServer/FeatureServer) |
-| Status | `pending` — locate zone polygon layer + rule page URLs |
-| Notes | Enables the `planning.zone` check with links to rule pages. |
+| Source org | Auckland Council (Plans and Places) |
+| Layer | Unitary Plan Base Zone (Auckland Unitary Plan — Operative in part, 15 Nov 2016) |
+| Item ID | `232d7b39839d4616bcbfc0509e26d9b3` |
+| Data type | Polygon (MultiPolygon) |
+| CRS | NZTM2000 (EPSG:2193) |
+| Access method | ArcGIS REST FeatureServer (no auth, open data) |
+| Endpoint | `https://services1.arcgis.com/n4yPwebTjJCmXB6W/ArcGIS/rest/services/Unitary_Plan_Base_Zone/FeatureServer/0` |
+| Query example | `.../FeatureServer/0/query?where=1=1&outFields=OBJECTID,NAME,ZONE,GROUPZONE&outSR=2193&returnGeometry=true&f=geojson&resultRecordCount=2000` |
+| Max record count | 2000 per request → paginate with `resultOffset`; honour `exceededTransferLimit` |
+| Fields | `OBJECTID`, `NAME` (sub-area label, often empty), `ZONE` (coded double → zone name), `GROUPZONE` (coded double → group), `VALIDATIONSTATE`, `VERSIONSTATUS`, `GlobalID`, `Shape__Area`, `Shape__Length` |
+| Licence | Auckland Council Open Data — CC BY 4.0 (commercial use OK with attribution) |
+| Attribution | "Auckland Council — Unitary Plan Base Zone (CC BY 4.0)" |
+| Rule pages | Auckland Unitary Plan ePlan — Chapter H Zones PDFs at `https://unitaryplan.aucklandcouncil.govt.nz/` (index: `data/operative/data.xml`). Coastal zones are in Chapter F. |
+| Update cadence | As updated; the ePlan viewer is the live text source |
+| Status | `verified` — endpoint, licence (CC BY 4.0), and coverage confirmed 2026-11-02. Import pending; version stays `draft` until the last page succeeds, then `active`. |
+| Notes | `ZONE` is a coded value decoded client-side to the zone name (e.g. 18 → Residential - Mixed Housing Suburban Zone). The H-chapter rule PDF URL is built from the zone name. Used for the `planning.zone` check, which intersects the confirmed parcel (not the address point). |
 
 ---
 

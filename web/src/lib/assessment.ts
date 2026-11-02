@@ -64,7 +64,7 @@ function findingFromRow(row: RawFindingRow, intention: BuyerIntention): Finding 
 
 async function runCheck(
   sb: SupabaseClient,
-  fn: "assess_overland_flow" | "assess_flood_prone",
+  fn: "assess_overland_flow" | "assess_flood_prone" | "assess_unitary_plan_zone",
   parcelId: string,
   intention: BuyerIntention,
   fallback: Finding,
@@ -98,5 +98,12 @@ export async function runChecksForParcel(
     intention,
     unavailableFinding("hazard.flood_prone", "Flood prone area check", intention, "No data returned."),
   );
-  return [overland, flood];
+  const zone = await runCheck(
+    sb,
+    "assess_unitary_plan_zone",
+    parcelId,
+    intention,
+    unavailableFinding("planning.zone", "Unitary Plan zone check", intention, "No data returned."),
+  );
+  return [overland, flood, zone];
 }
