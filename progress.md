@@ -354,6 +354,13 @@ Use plan todos for detail; this is a short pointer list.
 - [ ] Paid report gate — free first search (address → confirm → on-screen findings); paywall the PDF export and saved shortlist beyond N properties.
 - [ ] Intention-aware ordering already in the report; make it the headline differentiator vs $49 hazard PDFs.
 
+### Data freshness / ops (scheduled re-imports)
+- [ ] **Re-import LINZ parcels on a schedule.** The parcel snapshot (461,632 Auckland parcels, imported 2026-11-01) is the geometry every hazard is intersected with. LINZ continually retires/subdivides parcels and repositions address points, so a static snapshot drifts from the live cadastre. Discovered 2026-11-02: "17 Shanaway Rise, Hillcrest" resolved to parcel 5039937 (1,163 m²) on 2026-11-01 but to parcel 5169096 (687 m²) on 2026-11-02 — the area change suggests the section was subdivided and the live address point now falls on the new parcel. The parcel-confirmed intersection is our headline differentiator; a stale snapshot silently makes it less honest. Scheduling options, ranked:
+  - Monthly scheduled re-import of LINZ NZ Primary Parcels (Auckland clip) — probably enough for most of the city; lowest ops cost.
+  - Plus a freshness guard at report-generation time: if the active parcel dataset version is older than N days, refuse to run / warn / auto-refresh before returning findings — the highest-integrity option for the paid report.
+  - Address points are already live (LINZ NZ Addresses WFS, hit on every search) — no change needed there.
+  - Record each re-import in `dataset_versions` and `docs/dataset-verification.md` as already done for hazard layers.
+
 ### Future — paid data layers / APIs (not now; everything above is free CC BY 4.0)
 *Add only when a check's buyer value justifies the per-report cost. Price must still land at $25–30, so pass-through costs cap what we can use.*
 
