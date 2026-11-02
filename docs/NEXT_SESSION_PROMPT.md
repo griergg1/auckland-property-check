@@ -1,39 +1,53 @@
 # Next session — prompt
 
-Start the session by reading `progress.md` and running the start-of-session checklist. The phase is the Phase 0.5 proof of concept, live on Vercel with parcels, overland flow, flood prone, coastal inundation (1% AEP storm-tide), and Unitary Plan zone checks. Do not redo any of those imports, the domain, the basemap, or the parcel picker.
+Start the session by reading `progress.md` and running the start-of-session checklist. The phase is **v1.5 — the home-buyer report**, built on top of the Phase 0.5 PoC that is live on Vercel with parcels, overland flow, flood prone, coastal inundation (1% AEP storm-tide), and Unitary Plan zone checks. **Do not redo any of those imports, the domain, the basemap, or the parcel picker.**
 
-**Goal:** Marketing copy overhaul + emphasise our differentiators vs Duly. This is a copy/positioning session, not a new-data-import session.
+**Goal:** Start building v1.5. Run the rating-valuation sourcing check, then build Wave 1 of the v1.5 plan (the three items that change how the product *feels*), then rewrite the home page hero to lead with the home buyer — backed by the new live findings, not promised ones.
 
-**Context:** Read `docs/COMPETITOR_Duly.md` first — it is the competitor research for duly.co.nz (free AI-generated NZ property reports, national flood map, mortgage calculator, Kāinga Ora map, MCP server, account + sharing + notebooks). Duly has clear "who / what / how / why trust / what it costs" framing; we have almost none. Our home page (`web/src/app/page.tsx`) is honest but cold — a tool, not a product.
+**Read these first — they are the source of truth for this session:**
+- `docs/PRODUCT_SCOPE.md` — the full scope of a property buying report, organised by buyer question. The "why."
+- `docs/PRODUCT_SCOPE_V15_PLAN.md` — the prioritized build plan (high-value + free, in 4 waves). The "what and when." This session is **Wave 1** (§3.1) plus the §4 sourcing check and the hero rewrite at the end.
+- `.agents/product-marketing.md` — the voice and positioning rules. The hero rewrite must follow these.
+- `docs/dataset-verification.md` — the dataset ledger. Every new layer imported this session gets an entry here, same as the existing hazard layers.
 
-**Differentiators we already have and must say out loud (do not invent new ones):**
-1. Parcel-confirmed intersection — every hazard is intersected with the confirmed LINZ parcel polygon, not an address point or a 500m search circle (Duly uses a 500m circle).
-2. Intention-aware ordering — findings ordered by what the buyer intends to do (live / renovate / extend / add a dwelling / build on vacant land).
-3. Four-state finding model — detected / not_detected / unavailable / needs_review. We never say "all clear" on missing data; Duly's AI reports can.
-4. Source-cited, deterministic findings — every finding links to its source and retrieval date; the narrative is not AI-generated, so it cannot hallucinate.
-5. Unitary Plan zone → rule chapter PDF deep link.
-6. Per-finding limitations — each finding states what the map does NOT establish.
-7. Auckland Council source-first — canonical AC layers imported directly from the ArcGIS hub with verified CC BY 4.0 licences, recorded in `docs/dataset-verification.md`.
+**Context:** User feedback (2026-11-02) was that the Phase 0.5 PoC "feels like a tool for buying land, not a house" and covers "only a small percentage of what it needs to do." A normal home buyer's first questions are value, schools, and neighbourhood — none of which we answer today. v1.5 fixes that. Wave 1 is the three items that flip the product from a land-buyer tool into a home-buyer tool: rating valuation + council rates, school zones, and the intention-aware "what to ask" layer.
 
-**Scope for this session (copy + small structural additions, no new data imports):**
+**Branching step — do this FIRST, before building anything:**
 
-1. **Rewrite the hero** (`web/src/app/page.tsx`) with a sharper value prop and an explicit "who it's for" line. Keep the honest tone (we are not a LIM, sources cited). Suggested direction: lead with the parcel-precise + intention-aware + four-state honesty trio as the reason to use us over a 500m-circle map or an AI-generated summary.
+Run the §4 sourcing check for **rating valuation + council rates** (plan item 1.1). Concretely:
+1. Check the Auckland Council open-data portal for a per-property rating-valuation feed (CSV / API).
+2. Check QV's API terms (QV.co.nz shows RV free per-property; an API may exist with a free tier or a paid tier).
+3. If neither exists, confirm whether the council's "Search rating" web endpoint can be queried per-property at low volume (TOS-permitted, rate-limited, cached for N days).
 
-2. **Add a "Who should use this" section** to the home page, mapped to our intention model (first-home buyer, renovator, extender, add-a-dwelling, vacant-land builder). One line each on why the report answers their question.
+Then decide the order:
+- **If a free feed exists** → build 1.1 (rating valuation + council rates) first, then 1.2 (school zones + Equity Index), then 1.3 (what-to-ask layer).
+- **If no free feed** → 1.1 moves to the paid upsell lane. Build 1.2 first, then 1.3, then 1.1 when a feed is found. Log the sourcing outcome in the session log and in `docs/dataset-verification.md`.
 
-3. **Add a worked example / journey** like Duly's "24 Kōwhai Street" — a short, illustrated 4-step walk-through (search → confirm parcel → read findings → compare/export) using a real Auckland address. Keep it honest: show a real finding, not a mockup.
+**Scope for this session (Wave 1 of `PRODUCT_SCOPE_V15_PLAN.md`):**
 
-4. **Add a "Why morebeanz" differentiator section** to the home page. Use the seven differentiators above. Frame it as a direct, factual contrast with a generic "AI property report" or a "500m flood search" — without naming Duly. The point is the buyer can tell the difference.
-
-5. **Add `/about`, `/support`, `/contact` pages** (App Router). Short, factual, no marketing fluff that we can't back up. About: what morebeanz is, the source-first principle, the four-state honesty rule, the no-LIM disclaimer. Support: a short FAQ (What does the report cover? What does it NOT cover? How current is the data? Is it a LIM?) + email. Contact: email + a short form (or just an email link if a form is out of scope).
-
-6. **State pricing clearly.** Today it is free. The backlog plans a $25–30 paid report (pre-LIM screen, LIM is $375/10 days — see `docs/BRIEF.md`). Say on the home page: free now; paid PDF report planned. Do not build the paywall this session.
-
-7. **Footer:** add links to About / Support / Contact, keep the "not a LIM / not ownership / not an approval guarantee" line, add the source-first attribution.
+1. **1.1 Rating valuation + council rates** (if the sourcing check passes). What the buyer sees: CV (capital value), land value, improvement value, date of last RV, and the annual council rates — on the report header, above the findings. Same four-state shape as the existing findings (`detected` / `not_detected` / `unavailable` / `needs_review`); `unavailable` if the feed can't return a value for this parcel. Per-finding limitations line: "This is the council's rating valuation, not a market valuation or a registered valuation." Import the layer with the same hardening as the existing hazard imports (reject ArcGIS error body, honour `exceededTransferLimit`, refuse to activate an empty import, mark the version failed on throw, draft → active). Record in `docs/dataset-verification.md`.
+2. **1.2 School enrolment zones + Equity Index.** What the buyer sees: primary, intermediate, and secondary enrolment zones that contain the section, the school names, and each school's Equity Index (the replacement for the old decile). Dataset: Ministry of Education — NZ Schools directory + enrolment zones (GIS polygons, data.govt.nz / Koordinates) + Equity Index. Licence: free, CC BY 4.0 (Crown copyright, MoE). Point-in-polygon against the confirmed parcel centroid. Same import hardening. Same four-state shape; `unavailable` if the parcel is outside the MoE coverage.
+3. **1.3 The "what to ask" layer (intention-aware).** What the buyer sees: a short, plain-English list of questions for the agent, the lawyer, the council, and the builder — derived from the findings on *this* report and the buyer's selected intention. E.g. a detected overland flow path + "extend" intention → "Ask the builder: how does this affect the extension's drainage design?" Dataset: none external — derived from the report's own findings by deterministic rules (same `RULE_VERSION` pattern as the hazard checks). Add a `generate_questions` SQL function that takes the run's findings + the intention and returns questions per audience. Render as a new section on the report page. Follow the voice in `.agents/product-marketing.md` — plain English, no jargon, talk to the buyer.
+4. **Rewrite the home page hero** to lead with the home buyer, not the land buyer. Do this LAST, after 1.1 and/or 1.2 are live, so the new copy is backed by real findings on the report — not promised ones. Replace "section" with "property" throughout the hero and the "who it's for" section. Lead with "what it's worth and what's on it," not just "what's on it." Keep the honest tone (not a LIM, sources cited, four states). Keep the worked example honest — re-run the golden address and update the worked-example finding card to match what the live report returns on the day of the session (the parcel data has shifted before; do not trust the stale log).
 
 **Out of scope for this session (do not start):**
-- New data imports (landslide susceptibility, AUP overlays, coastal erosion, tsunami, NHCover — these stay in the backlog).
-- Mortgage calculator, "what's nearby," Kāinga Ora map, MCP server, account/auth, report sharing/PDF, bookmarks/shortlist — these are bigger builds; log them in the backlog with a note that Duly has them, but do not build them this session.
-- Coastal inundation SLR scenarios (0.5m/1m/2m) — note in backlog as a quick parity move vs Duly's "2130 scenario" example, but do not import this session.
+- Wave 2 (landslide susceptibility, Unitary Plan overlays) — next session.
+- Wave 3 (nearby bundle: transit, parks, coast, shops, 800m) — later.
+- Wave 4 (shortlist compare, PDF export) — later. The paywall line is already pinned (3 properties free; 4+ requires the paid PDF — see `PRODUCT_SCOPE_V15_PLAN.md` §5), so 4.1 builds clean when we get there; do not build it this session.
+- The paid tier (title, sales, AVM, consents, floor plan) — separate scope after v1.5 is live.
+- Medium-value free hazards (coastal SLR scenarios, coastal erosion, liquefaction, tsunami, fault lines, HAIL, NHCover) — a later "hazards completion" wave.
+- New data imports beyond Wave 1.
+- Re-importing LINZ parcels (that's a separate backlog item — "Data freshness / ops" in `progress.md`).
 
-**Verify with:** one real address from the golden set run end-to-end (search → confirm → report) to confirm the new copy does not break the flow; lint; typecheck; `npm run test`; manual mobile-width pass on the home page and the three new pages. Then run the closeout in `progress.md` and add a Session log entry. Add a Backlog entry: "Marketing v2 — add mortgage calculator, what's-nearby, coastal SLR scenarios, report sharing/PDF" so the next-but-one session has a clear next step.
+**Verify with:**
+- One real address from the golden set run end-to-end (search → confirm → report) to confirm the new findings (RV and/or school zones, plus the what-to-ask section) render and the existing flow still works.
+- `npm run lint`, `npm run typecheck`, `npm run test` (Vitest; the live Supabase integration test needs network).
+- Manual mobile-width pass on the report page (new findings + what-to-ask section) and the home page (hero rewrite).
+- CodeRabbit review of session changes; fix or document any Critical / Warning findings.
+- Then run the closeout in `progress.md` and add a Session log entry (Done / Verified / Next / Notes). Update the Backlog: mark the Wave 1 items done, and note the RV sourcing outcome (free feed found, or 1.1 moved to upsell).
+
+**Honest constraints — do not break these:**
+- The four-state finding model is the headline differentiator. Never say "all clear" on missing data — `unavailable` is an honest state, not a pass.
+- Every finding links to its source and a retrieval date. The narrative is deterministic, not AI-generated.
+- The worked example on the home page must reflect a real run on the day of the session, not a stale log entry. Re-run the golden address and update the card.
+- The hero rewrite must follow `.agents/product-marketing.md` (plain English, talk to the buyer, honest over hype, "property" not "section").
