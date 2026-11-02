@@ -130,6 +130,32 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-02 — Auckland Unitary Plan zone check
+
+**Goal:** Add Auckland Unitary Plan zones as the `planning.zone` check, the third live finding.
+
+**Done:**
+- Located the official zone polygon layer: Auckland Council Unitary Plan Base Zone, ArcGIS FeatureServer item `232d7b39839d4616bcbfc0509e26d9b3`, CC BY 4.0. Recorded the endpoint, fields, coded values, and rule-page URL pattern in `docs/dataset-verification.md`.
+- Imported 139,488 operative zone polygons (filtered to `VERSIONSTATUS=4`) into `public.hazard_features` under slug `ac-unitary-plan-zones`. The import follows the flood-prone hardening: reject an ArcGIS error body, honour `exceededTransferLimit`, refuse to activate an empty import, mark the version failed on throw, and keep the version `draft` until the last page succeeds, then `active`.
+- Added `assess_unitary_plan_zone` SQL function. It intersects the confirmed parcel (not the address point), returns one of the four finding states, names the zone, and links to the ePlan rule chapter PDF for that zone (H-chapters for land zones, F-chapters for coastal zones, ePlan root as fallback). When the layer is missing the result is `unavailable`, not clear. The limitations state what the map does not establish (overlays, precincts, designations, height, activity status, consent needs).
+- Wired it as the third finding in `runChecksForParcel`. The report now returns overland flow, flood prone areas, and Unitary Plan zone.
+- Updated home and footer copy to mark planning as live, only after the version was active.
+
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (4 pass) / manual ✅ (real parcel 5039937 → detected, Residential - Mixed Housing Suburban Zone, H4 PDF; demo parcel → detected, Coastal - General Coastal Marine Zone, F2 PDF; a parcel outside coverage → not_detected) / CodeRabbit ✅ (1 major fixed, 2 deferred) / secrets not in git ✅ / pushed ✅
+
+**Next:** Terrain (approximate slope) — locate an elevation/DEM source and licence, then add `terrain.slope` as the fourth check.
+
+**Notes:**
+- The Unitary Plan is "Operative in part (15 November 2016)". The base zone layer tiles all of Auckland (land + coastal + roads), so a normal Auckland parcel always returns `detected`; `not_detected` means the parcel is outside the AUP area. 16 non-operative records (12 Proposed, 4 other) are excluded by the `VERSIONSTATUS=4` filter so the check names the current zone, not a plan-change version.
+- The check names the base zone only. Overlays (historic heritage, special character, significant ecological areas, volcanic viewshafts), precincts, and designations are separate layers not yet assessed.
+
+**Notes (CodeRabbit):**
+- Major, fixed: filter the import to operative records (`VERSIONSTATUS=4`) so a Proposed/Decision zone is not reported as the current zone. Re-imported 139,488 operative polygons, matching the source's operative count exactly.
+- Major, deferred: validate the imported total against an authoritative source count and assert geometry SRID/bounds before promoting the version. The import already validates non-empty and `insert_hazard_geojson` sets SRID 2193; an authoritative count check is consistent with the flood-prone import (which also lacks it) and is left for a later hardening pass across all imports.
+- Major, considered: keep the "Planning · live" label as planned until the RPC is confirmed for deployment. The user's instruction was to update copy after the version is active; the version is active, the RPC is verified on three parcels, and the change is pushed to main (Vercel auto-deploys). Kept as live.
+
+---
+
 ## 2026-11-02 — Parcel choice and flood prone areas
 
 **Goal:** Let a visitor choose when several parcels contain the address, then add flood prone areas as the second live check.
@@ -254,7 +280,7 @@ Use plan todos for detail; this is a short pointer list.
 - [x] `morebeanz.com` DNS (re-registered; apex A record points at Vercel)
 - [x] Choose among multiple parcel candidates
 - [x] Flood prone areas
-- [ ] Next dataset: unitary plan zone
+- [x] Unitary Plan zone
 - [ ] Import versions stay draft until the import finishes
 
 ---
