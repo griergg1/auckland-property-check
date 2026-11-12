@@ -11,7 +11,7 @@ export async function GET(
 
   const { data: run, error: runErr } = await sb
     .from("assessment_runs")
-    .select("id, intention, rule_version, dataset_version_ids, completed_at, parcel_ids")
+    .select("id, intention, rule_version, dataset_version_ids, completed_at, parcel_ids, address_label")
     .eq("id", runId)
     .single();
   if (runErr || !run) {
@@ -26,13 +26,39 @@ export async function GET(
     return NextResponse.json({ error: findingsErr.message }, { status: 500 });
   }
 
-  // Fetch parcel geometries for the map
+  // Parcel outline, LINZ id, and area. Area is shown even when the council
+  // rating valuation is missing — that size comes from the parcel, not the rates API.
+  const parcelIds = (run.parcel_ids ?? []) as string[];
+  const parcelQuery = parcelIds.length
+    ? await sb.from("parcels").select("id, source_parcel_id, area_m2").in("id", parcelIds)
+    : { data: [] as { id: string; source_parcel_id: string | null; area_m2: number | null }[], error: null };
+  if (parcelQuery.error) {
+    return NextResponse.json({ error: parcelQuery.error.message }, { status: 500 });
+  }
+  const parcelRows = parcelQuery.data;
+
   const parcelGeometries: (GeoJSON.Feature | null)[] = [];
-  for (const parcelId of (run.parcel_ids ?? []) as string[]) {
+  const parcels: {
+    id: string;
+    sourceParcelId: string | null;
+    areaM2: number | null;
+    geometry: GeoJSON.Geometry | null;
+  }[] = [];
+  for (const parcelId of parcelIds) {
+    const row = (parcelRows ?? []).find((p: { id: string }) => p.id === parcelId);
     const { data: geo } = await sb.rpc("parcel_geojson_4326", { p_parcel_id: parcelId });
+    const geometry = (geo ?? null) as GeoJSON.Geometry | null;
     parcelGeometries.push(
-      geo ? ({ type: "Feature", geometry: geo as any, properties: { id: parcelId } } as GeoJSON.Feature) : null,
+      geometry
+        ? ({ type: "Feature", geometry, properties: { id: parcelId } } as GeoJSON.Feature)
+        : null,
     );
+    parcels.push({
+      id: parcelId,
+      sourceParcelId: row?.source_parcel_id ?? null,
+      areaM2: row?.area_m2 != null ? Number(row.area_m2) : null,
+      geometry,
+    });
   }
 
   const findings = (findingRows ?? []).map((f: any) => ({
@@ -102,11 +128,13 @@ export async function GET(
   return NextResponse.json({
     runId: run.id,
     intention: run.intention,
+    addressLabel: run.address_label ?? null,
     ruleVersion: run.rule_version,
     datasetVersionIds: run.dataset_version_ids ?? [],
     findings,
     ratingValuation,
     questions,
+    parcels,
     parcelGeometries,
     isDemo: false,
   });

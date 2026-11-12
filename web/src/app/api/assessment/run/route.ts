@@ -27,6 +27,7 @@ export async function POST(request: Request) {
     .insert({
       parcel_ids: parcelIds,
       intention,
+      address_label: addressLabel ?? null,
       rule_version: RULE_VERSION,
       dataset_version_ids: datasetVersionIds,
     })

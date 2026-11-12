@@ -130,6 +130,27 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-12 — Report field sheet: price, size, and the parcel drawing
+
+**Goal:** Make a real property report look like the homepage field sheet, and show price and property size for a searched address (10 Orion Place).
+
+**Done:**
+- The report opens with a live field sheet (`web/src/components/ReportSheet.tsx`): the LINZ parcel outline, north up, plus the address, parcel size, capital value, land value, annual rates, floor area, zone, enrolment zones, and flood / landslide / overlay stamps. The findings list and map stay underneath.
+- Parcel size comes from `parcels.area_m2` and is shown even when the council rating valuation is missing. The earlier 10 Orion Place run had an unavailable valuation, so the page had neither a price nor a size.
+- The searched address is stored on `assessment_runs.address_label` (migration `20261112000006`, applied on the live project) and saved by the run route.
+- The council valuation lookup retries once when the public token is rejected (401/403).
+- Re-ran 10 Orion Place (LINZ parcel 4923817). Capital value $1,150,000, land value $1,000,000, rates $4,038, floor 140 m², parcel 675 m², landslide High, Mixed Housing Suburban, three enrolment zones.
+
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (7/7 with network) / manual ✅ (10 Orion Place report at desktop and 390px: address, $1,150,000, 675 m², parcel outline inside the sheet) / CodeRabbit ✅ (9 findings; drawing clip, evidence hidden under the fill, flood stamp honesty, parcel-query errors, valuation limitations, and the missing-size copy fixed; two left as notes) / secrets not in git ✅ / pushed ✅
+
+**Next:** Golden-address mobile pass was done for this report at 390px. Next product work is still the importer hygiene pass (atomic promote+retire, ST_IsValid, empty-page guard, positive-area intersection) or v1.5 Wave 3 (coastal erosion).
+
+**Notes:**
+- The confirm page runs one parcel, so the sheet uses that parcel rather than summing areas.
+- `address_label` is written on insert. Reports created before this column stay untitled unless the rating-valuation cache still has the address.
+- CodeRabbit CLI 0.7.6 still cannot auto-update. `coderabbit update` / `brew upgrade coderabbit` was not run.
+- The map's north control can sit over the bottom of the sheet on a short viewport. Left as-is; it belongs to the map below.
+
 ## 2026-11-12 — Wave 2: landslide susceptibility + Unitary Plan overlays
 
 **Goal:** Add Wave 2 of the v1.5 plan — landslide susceptibility (Wave 2.1) and Unitary Plan overlays (Wave 2.2) — then review.

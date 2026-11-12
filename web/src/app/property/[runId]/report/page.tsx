@@ -3,6 +3,7 @@ import { useEffect, useState, Suspense } from "react";
 import { useParams } from "next/navigation";
 import MapView from "@/components/MapView";
 import { SiteHeader, SiteFooter, StatusStamp } from "@/components/SiteChrome";
+import { ReportSheet, schoolNames, shortZone } from "@/components/ReportSheet";
 import type { Finding } from "@/lib/schemas";
 
 const INTENTIONS: { value: string; label: string }[] = [
@@ -36,6 +37,8 @@ function ReportContent() {
   const [ratingValuation, setRatingValuation] = useState<any>(null);
   const [questions, setQuestions] = useState<{ audience: string; question: string; checkId: string; rationale: string }[]>([]);
   const [parcelGeometries, setParcelGeometries] = useState<(GeoJSON.Feature | null)[]>([]);
+  const [addressLabel, setAddressLabel] = useState<string | null>(null);
+  const [parcels, setParcels] = useState<{ id: string; sourceParcelId: string | null; areaM2: number | null; geometry: GeoJSON.Geometry | null }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -52,6 +55,8 @@ function ReportContent() {
         setRatingValuation(data.ratingValuation ?? null);
         setQuestions(data.questions ?? []);
         setParcelGeometries(data.parcelGeometries ?? []);
+        setAddressLabel(data.addressLabel ?? null);
+        setParcels(data.parcels ?? []);
         if (data.intention) setIntention(data.intention);
       } catch (e: any) {
         setError(e.message ?? "error");
@@ -84,8 +89,48 @@ function ReportContent() {
     return ai - bi;
   });
 
-  const fmtMoney = (n: number | null | undefined) =>
-    n == null ? "—" : "$" + n.toLocaleString("en-NZ");
+  // The confirm page runs one parcel. The sheet shows that parcel.
+  const parcel = parcels[0];
+  const zoneFinding = findings.find((f) => f.checkId === "planning.zone" && f.status === "detected");
+  const schoolFinding = findings.find((f) => f.checkId === "neighbourhood.school_zones" && f.status === "detected");
+  const floodIds = ["hazard.overland_flow", "hazard.flood_prone", "hazard.coastal_inundation"];
+  const floodFindings = findings.filter((f) => floodIds.includes(f.checkId));
+  const landslide = findings.find((f) => f.checkId === "hazard.landslide_susceptibility");
+  const overlays = findings.find((f) => f.checkId === "planning.overlays");
+  const sheetEvidence = findings
+    .filter((f) => f.checkId !== "neighbourhood.school_zones" && f.checkId !== "planning.zone" && f.checkId !== "value.rating_valuation")
+    .map((f) => f.evidenceGeometry)
+    .filter((g): g is object => !!g) as GeoJSON.Geometry[];
+
+  const stamps: { text: string; tone: "on" | "off" | "quiet" }[] = [];
+  if (floodFindings.length > 0) {
+    const hit = floodFindings.some((f) => f.status === "detected");
+    const clear = floodFindings.every((f) => f.status === "not_detected");
+    stamps.push(
+      hit
+        ? { text: "Flood · on the map", tone: "on" }
+        : clear
+          ? { text: "Flood · not on the map", tone: "off" }
+          : { text: "Flood · not fully checked", tone: "quiet" },
+    );
+  }
+  if (landslide) {
+    const label = landslide.status === "detected"
+      ? landslide.title.replace(/^Landslide susceptibility:\s*/i, "Landslide · ")
+      : landslide.status === "not_detected"
+        ? "Landslide · not on the map"
+        : "Landslide · not checked";
+    stamps.push({
+      text: label,
+      tone: landslide.status === "detected" ? "on" : landslide.status === "not_detected" ? "off" : "quiet",
+    });
+  }
+  if (overlays) {
+    stamps.push({
+      text: overlays.status === "detected" ? "Overlays · on the map" : overlays.status === "not_detected" ? "Overlays · none" : "Overlays · not checked",
+      tone: overlays.status === "detected" ? "on" : overlays.status === "not_detected" ? "off" : "quiet",
+    });
+  }
 
   return (
     <div className="flex min-h-full flex-col">
@@ -96,8 +141,9 @@ function ReportContent() {
         <div className="flex flex-col gap-4 border-b border-hairline pb-6 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="label">Property report</p>
-            <h1 className="display mt-2 text-[2rem] md:text-[2.25rem]">Findings</h1>
-            <p className="label mt-2">Run {runId}</p>
+            <p className="mt-2 max-w-xl text-[0.95rem] leading-relaxed text-ink-muted">
+              The parcel, what the council values it at, and what the maps show. Not a LIM.
+            </p>
           </div>
           <button
             onClick={() => window.print()}
@@ -106,6 +152,32 @@ function ReportContent() {
             Print
           </button>
         </div>
+
+        {!loading && !error && (
+          <ReportSheet
+            address={addressLabel ?? ratingValuation?.address ?? null}
+            sourceParcelId={parcel?.sourceParcelId ?? null}
+            areaM2={parcel?.areaM2 ?? null}
+            geometry={parcel?.geometry ?? parcelGeometries[0]?.geometry ?? null}
+            evidence={sheetEvidence}
+            capitalValue={ratingValuation?.capitalValue ?? null}
+            landValue={ratingValuation?.landValue ?? null}
+            annualRates={ratingValuation?.annualRates ?? null}
+            floorAreaM2={ratingValuation?.totalFloorAreaM2 ?? null}
+            councilLandAreaM2={ratingValuation?.landAreaM2 ?? null}
+            valuationAvailable={rvFinding?.status === "detected" && ratingValuation != null}
+            zone={shortZone(zoneFinding?.title)}
+            schools={schoolNames(schoolFinding?.explanation)}
+            stamps={stamps}
+            retrievedLabel={
+              rvFinding?.retrievalDate
+                ? `Retrieved ${new Date(rvFinding.retrievalDate).toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" })}.`
+                : null
+            }
+            sourceUrl={rvFinding?.sourceUrl ?? null}
+            limitations={rvFinding?.limitations ?? null}
+          />
+        )}
 
         {/* intention selector */}
         <div className="mt-6">
@@ -133,78 +205,6 @@ function ReportContent() {
 
         {loading && <p className="mt-8 text-ink-muted">Loading…</p>}
         {error && <p className="mt-8 text-st-detected">{error}</p>}
-
-        {/* rating valuation & council rates — header card, above the findings */}
-        {rvFinding && (
-          <div className="mt-8 border border-hairline">
-            <div className="flex items-start justify-between gap-4 border-b border-hairline px-5 py-4">
-              <div>
-                <p className="label">Rating valuation &amp; council rates</p>
-                <h2 className="display mt-1 text-[1.2rem] leading-snug">
-                  {rvFinding.status === "detected"
-                    ? "What the council values it at, and what it costs per year."
-                    : "We couldn't pull the council rating valuation."}
-                </h2>
-              </div>
-              <StatusStamp status={rvFinding.status} />
-            </div>
-            {rvFinding.status === "detected" && ratingValuation ? (
-              <div className="px-5 py-4">
-                <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
-                  <div>
-                    <dt className="label">Capital value (CV)</dt>
-                    <dd className="display mt-1 text-[1.25rem]">{fmtMoney(ratingValuation.capitalValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="label">Land value</dt>
-                    <dd className="display mt-1 text-[1.25rem]">{fmtMoney(ratingValuation.landValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="label">Improvement value</dt>
-                    <dd className="display mt-1 text-[1.25rem]">{fmtMoney(ratingValuation.improvementValue)}</dd>
-                  </div>
-                  <div>
-                    <dt className="label">Annual council rates</dt>
-                    <dd className="display mt-1 text-[1.25rem]">{fmtMoney(ratingValuation.annualRates)}</dd>
-                  </div>
-                  {ratingValuation.landAreaM2 != null && (
-                    <div>
-                      <dt className="label">Land area</dt>
-                      <dd className="mt-1 text-[0.95rem]">{ratingValuation.landAreaM2.toLocaleString()} m²</dd>
-                    </div>
-                  )}
-                  {ratingValuation.totalFloorAreaM2 != null && (
-                    <div>
-                      <dt className="label">Floor area</dt>
-                      <dd className="mt-1 text-[0.95rem]">{ratingValuation.totalFloorAreaM2.toLocaleString()} m²</dd>
-                    </div>
-                  )}
-                </dl>
-                <p className="mt-4 text-[0.85rem] leading-relaxed text-ink-muted">
-                  {rvFinding.limitations}
-                </p>
-                {rvFinding.sourceUrl && (
-                  <p className="mt-3 border-t border-hairline pt-3 label">
-                    <a
-                      href={rvFinding.sourceUrl}
-                      className="text-accent hover:underline"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Source · Auckland Council rating valuation
-                    </a>
-                    {" · retrieved " + new Date(rvFinding.retrievalDate).toLocaleDateString()}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="px-5 py-4 text-[0.9rem] leading-relaxed">
-                <p>{rvFinding.explanation}</p>
-                <p className="mt-3 text-ink-muted">{rvFinding.limitations}</p>
-              </div>
-            )}
-          </div>
-        )}
 
         {!loading && (
           <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_minmax(0,420px)]">

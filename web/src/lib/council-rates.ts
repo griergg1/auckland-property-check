@@ -144,14 +144,32 @@ type AddressSearchItem = {
   suggestion?: string;
 };
 
+async function fetchAuthed(
+  sb: SupabaseClient,
+  token: string,
+  url: string,
+): Promise<{ token: string; res: Response }> {
+  let res = await fetch(url, { headers: apiHeaders(token) });
+  // A cached public token can expire or be the wrong JWT. Refresh once and retry.
+  if (res.status === 401 || res.status === 403) {
+    const fresh = await fetchFreshToken();
+    await storeToken(sb, fresh);
+    token = fresh;
+    res = await fetch(url, { headers: apiHeaders(token) });
+  }
+  return { token, res };
+}
+
 async function resolvePropertyId(
   sb: SupabaseClient,
   token: string,
   addressLabel: string,
-): Promise<{ acRateAccountKey: string; matchedAddress: string } | null> {
+): Promise<{ token: string; acRateAccountKey: string; matchedAddress: string } | null> {
   const norm = normalizeAddress(addressLabel);
   const url = `${PROPERTY_API}?query=${encodeURIComponent(norm)}&pageSize=20`;
-  const res = await fetch(url, { headers: apiHeaders(token) });
+  const authed = await fetchAuthed(sb, token, url);
+  token = authed.token;
+  const res = authed.res;
   if (!res.ok) throw new Error(`council address search ${res.status}`);
   const data = (await res.json()) as AddressSearchItem[] | { items?: AddressSearchItem[] } | null;
   const items: AddressSearchItem[] = Array.isArray(data)
@@ -167,9 +185,14 @@ async function resolvePropertyId(
     return cand === target || cand.startsWith(target) || target.startsWith(cand);
   });
   const pick = exact ?? items[0];
+  // The public search often returns only { id, address }. That id is the rate account key.
   const key = pick.acRateAccountKey ?? pick.ACRateAccountKey ?? pick.id;
   if (!key) return null;
-  return { acRateAccountKey: String(key), matchedAddress: pick.address ?? pick.suggestion ?? addressLabel };
+  return {
+    token,
+    acRateAccountKey: String(key),
+    matchedAddress: pick.address ?? pick.suggestion ?? addressLabel,
+  };
 }
 
 type RateAssessmentResponse = {
@@ -189,13 +212,14 @@ type RateAssessmentResponse = {
 };
 
 async function fetchRateAssessment(
+  sb: SupabaseClient,
   token: string,
   acRateAccountKey: string,
-): Promise<RateAssessmentResponse> {
+): Promise<{ token: string; raw: RateAssessmentResponse }> {
   const url = `${PROPERTY_API}/${acRateAccountKey}/rate-assessment`;
-  const res = await fetch(url, { headers: apiHeaders(token) });
-  if (!res.ok) throw new Error(`council rate-assessment ${res.status}`);
-  return (await res.json()) as RateAssessmentResponse;
+  const authed = await fetchAuthed(sb, token, url);
+  if (!authed.res.ok) throw new Error(`council rate-assessment ${authed.res.status}`);
+  return { token: authed.token, raw: (await authed.res.json()) as RateAssessmentResponse };
 }
 
 function rowFromApi(
@@ -261,9 +285,10 @@ export async function getRatingValuation(
   if (cachedByAddr) return valuationFromRow(cachedByAddr);
 
   // 2. Resolve address → ACRateAccountKey, then check cache by key.
-  const token = await getToken(sb);
+  let token = await getToken(sb);
   const resolved = await resolvePropertyId(sb, token, addressLabel);
   if (!resolved) return null;
+  token = resolved.token;
 
   const { data: cachedByKey } = await sb
     .from("rating_valuation_cache")
@@ -274,7 +299,7 @@ export async function getRatingValuation(
   if (cachedByKey) return valuationFromRow(cachedByKey);
 
   // 3. Fetch fresh and cache.
-  const raw = await fetchRateAssessment(token, resolved.acRateAccountKey);
+  const { raw } = await fetchRateAssessment(sb, token, resolved.acRateAccountKey);
   const row = rowFromApi(resolved.acRateAccountKey, resolved.matchedAddress, raw);
   const { error } = await sb.from("rating_valuation_cache").upsert(row, { onConflict: "ac_rate_account_key" });
   if (error) {
