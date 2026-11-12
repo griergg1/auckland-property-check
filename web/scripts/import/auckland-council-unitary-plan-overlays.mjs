@@ -10,6 +10,7 @@
 //   node --env-file=.env.local scripts/import/auckland-council-unitary-plan-overlays.mjs
 import "dotenv/config";
 import ws from "ws";
+import { assertCount, assertNotShortPage, pageContinues, promoteVersion, sourceCount } from "./lib/finish-import.mjs";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -179,17 +180,22 @@ function rowFromFeature(f, layer, typeDomain) {
 
 let total = 0;
 let versionId = null;
+let expected = 0;
 if (!DRY) versionId = await ensureDraftVersion();
 
 try {
   for (const layer of LAYERS) {
     const typeDomain = await loadTypeDomain(layer);
     const seenTypes = new Set();
+    const layerExpected = await sourceCount(`${layer.url}/query?where=VERSIONSTATUS%3D4&returnCountOnly=true&f=json`);
+    expected += layerExpected;
     let offset = 0;
     let layerTotal = 0;
+    let expectingMore = false;
     while (true) {
       const data = await fetchPage(layer, offset);
       const features = data.features ?? [];
+      assertNotShortPage(features, expectingMore, offset);
       if (features.length === 0) break;
       for (const f of features) {
         const t = (f.properties ?? f.attributes ?? {}).TYPE;
@@ -212,9 +218,10 @@ try {
       }
       console.log(`Imported/seen ${layerTotal} ${layer.name} features... (running total ${total})`);
       offset += features.length;
-      const more = data.exceededTransferLimit === true || features.length === PAGE;
-      if (!more) break;
+      expectingMore = pageContinues(data, features.length, PAGE);
+      if (!expectingMore) break;
     }
+    assertCount(layerTotal, layerExpected, layer.name);
     // Warn — not throw — if any TYPE code in the data is missing from the domain.
     // The feed sometimes carries codes before the domain catches up; we fall back
     // to no type name rather than the raw code so the scenario text stays readable.
@@ -232,29 +239,12 @@ try {
 }
 
 if (!DRY) {
-  if (total === 0) {
-    await markFailed("import returned no features");
-    console.error("refusing to activate an empty import");
+  try {
+    await promoteVersion(sb, { versionId, total, expected, label: SLUG });
+  } catch (err) {
+    await markFailed(err.message);
+    console.error(err.message);
     process.exit(3);
-  }
-  const { error: activateErr } = await sb.from("dataset_versions").update({
-    status: "active",
-    row_count: total,
-    geom_validated: true,
-  }).eq("id", versionId);
-  if (activateErr) {
-    await markFailed(activateErr.message);
-    console.error("promote error:", activateErr.message);
-    process.exit(3);
-  }
-  const { error: retireErr } = await sb.from("dataset_versions")
-    .update({ status: "retired" })
-    .eq("dataset_slug", SLUG)
-    .eq("status", "active")
-    .neq("id", versionId);
-  if (retireErr) {
-    console.error("retire error:", retireErr.message);
-    process.exit(4);
   }
 }
 

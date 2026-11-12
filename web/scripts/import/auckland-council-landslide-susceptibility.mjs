@@ -15,6 +15,7 @@
 //   node --env-file=.env.local scripts/import/auckland-council-landslide-susceptibility.mjs
 import "dotenv/config";
 import ws from "ws";
+import { assertCount, assertNotShortPage, pageContinues, promoteVersion, sourceCount } from "./lib/finish-import.mjs";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -109,12 +110,16 @@ async function fetchPage(resultOffset) {
 let total = 0;
 let offset = 0;
 let versionId = null;
+let expected = null;
 if (!DRY) versionId = await ensureDraftVersion();
 
 try {
+  expected = await sourceCount(`${FS_URL}/query?where=1%3D1&returnCountOnly=true&f=json`);
+  let expectingMore = false;
   while (true) {
     const data = await fetchPage(offset);
     const features = data.features ?? [];
+    assertNotShortPage(features, expectingMore, offset);
     if (features.length === 0) break;
     if (DRY) {
       total += features.length;
@@ -140,9 +145,10 @@ try {
     }
     console.log(`Imported/seen ${total} landslide susceptibility features...`);
     offset += features.length;
-    const more = data.exceededTransferLimit === true || features.length === PAGE;
-    if (!more) break;
+    expectingMore = pageContinues(data, features.length, PAGE);
+    if (!expectingMore) break;
   }
+  assertCount(total, expected, SLUG);
 } catch (err) {
   await markFailed(err.message);
   console.error(err.message);
@@ -150,29 +156,12 @@ try {
 }
 
 if (!DRY) {
-  if (total === 0) {
-    await markFailed("import returned no features");
-    console.error("refusing to activate an empty import");
+  try {
+    await promoteVersion(sb, { versionId, total, expected, label: SLUG });
+  } catch (err) {
+    await markFailed(err.message);
+    console.error(err.message);
     process.exit(3);
-  }
-  const { error: activateErr } = await sb.from("dataset_versions").update({
-    status: "active",
-    row_count: total,
-    geom_validated: true,
-  }).eq("id", versionId);
-  if (activateErr) {
-    await markFailed(activateErr.message);
-    console.error("promote error:", activateErr.message);
-    process.exit(3);
-  }
-  const { error: retireErr } = await sb.from("dataset_versions")
-    .update({ status: "retired" })
-    .eq("dataset_slug", SLUG)
-    .eq("status", "active")
-    .neq("id", versionId);
-  if (retireErr) {
-    console.error("retire error:", retireErr.message);
-    process.exit(4);
   }
 }
 

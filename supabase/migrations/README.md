@@ -16,6 +16,7 @@ checked-in SQL:
 | `20261112000004_generate_questions_overlays_landslide.sql` | Add landslide-susceptibility and overlays rules to `generate_questions`. |
 | `20261112000005_fix_licence_url_hyphenated_for_wave2_datasets.sql` | Point the two Wave 2 dataset rows at the hyphenated Auckland Council open-data licence URL. |
 | `20261112000006_assessment_run_address_label.sql` | Store the searched address on `assessment_runs` so the report can name the property. Applied on the live project. |
+| `20261112000007_import_hygiene.sql` | Promote a dataset version in one transaction after an `ST_IsValid` check, and count a hazard only when it crosses into the parcel. Applied on the live project. |
 
 These files are **not** a bootstrap set for a fresh project. The baseline schema
 (`public.parcels`, `public.hazard_features`, `public.dataset_versions`,

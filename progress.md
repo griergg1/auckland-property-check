@@ -130,6 +130,25 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-12 — Importer hygiene
+
+**Goal:** Stop a bad map download from replacing a good one, and stop a hazard that only touches a boundary from counting as "on the property".
+
+**Done:**
+- **One swap, not two.** `promote_dataset_version` turns the old version off and the new one on in a single database transaction. Every importer calls it, including the older overland-flow and LINZ parcel scripts, which used to mark a version live before the download finished.
+- **Broken shapes stay unpublished.** That same function counts invalid geometries in the new version and refuses to publish if any exist.
+- **A blank page is not the end.** Each importer asks the source for a total first. An empty page after a full page, or a stored count that does not match the source count, fails the download and leaves the previous map live.
+- **A touch is not a hit.** `feature_overlaps_parcel` keeps the spatial index (`ST_Intersects`) and drops boundary-only touches (`NOT ST_Touches`). Wired into the flood, coastal, overland-flow, landslide, zone, and overlay checks. School zones still use the parcel centre point. A landslide polygon with no category is now `needs_review`, not "nothing on the map".
+- Shared helpers live in `web/scripts/import/lib/finish-import.mjs`. SQL is `supabase/migrations/20261112000007_import_hygiene.sql`, applied on the live project.
+
+**Verified:** script syntax ✅ / live checks ✅ (17 Shanaway Rise still landslide Low and no overland flow; 10 Orion Place still landslide High) / the existing map layers were not re-downloaded
+
+**Next:** Wave 3 coastal erosion, or the next product piece (PDF paywall, shortlist, mortgage calculator).
+
+**Notes:**
+- Measuring the overlap area was too slow on the landslide layer, so the live test is "crosses the boundary" rather than "area greater than zero". Those are the same result for these polygons and lines, and the index still works.
+- The new download rules apply the next time an importer is run. Today's live layers were left as they are.
+
 ## 2026-11-12 — Report field sheet: price, size, and the parcel drawing
 
 **Goal:** Make a real property report look like the homepage field sheet, and show price and property size for a searched address (10 Orion Place).

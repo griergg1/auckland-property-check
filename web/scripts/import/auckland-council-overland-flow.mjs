@@ -7,6 +7,7 @@
 // Licence: Auckland Council Open Data (CC BY 4.0).
 import "dotenv/config";
 import ws from "ws";
+import { assertCount, assertNotShortPage, pageContinues, promoteVersion, sourceCount } from "./lib/finish-import.mjs";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SB_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -37,15 +38,24 @@ async function ensureDataset() {
     attribution: "Auckland Council Open Data — Overland Flow Paths (CC BY 4.0)",
     enabled: true,
   }).select("slug");
-  const { data: v } = await sb.from("dataset_versions").insert({
+  const { data: v, error } = await sb.from("dataset_versions").insert({
     dataset_slug: "ac-overland-flow-paths",
     version_label: new Date().toISOString().slice(0, 10),
     source_publication_date: "2026-03-24",
-    geom_validated: true,
-    status: "active",
+    geom_validated: false,
+    status: "draft",
     notes: "Auckland Council Overland Flow Paths import",
   }).select("id").single();
+  if (error || !v) throw new Error(error?.message ?? "could not create dataset version");
   return v.id;
+}
+
+async function markFailed(message) {
+  if (DRY || !versionId) return;
+  await sb.from("dataset_versions").update({
+    status: "failed",
+    notes: String(message).slice(0, 500),
+  }).eq("id", versionId);
 }
 
 async function fetchPage(resultOffset) {
@@ -60,11 +70,16 @@ async function fetchPage(resultOffset) {
 let total = 0;
 let offset = 0;
 let versionId = null;
+let expected = null;
 if (!DRY) versionId = await ensureDataset();
 
+try {
+expected = await sourceCount(`${FS_URL}/query?where=1%3D1&returnCountOnly=true&f=json`);
+let expectingMore = false;
 while (true) {
   const data = await fetchPage(offset);
   const features = data.features ?? [];
+  assertNotShortPage(features, expectingMore, offset);
   if (features.length === 0) break;
   if (DRY) {
     total += features.length;
@@ -89,8 +104,25 @@ while (true) {
     total += rows.length;
   }
   console.log(`Imported/seen ${total} flow path features...`);
-  if (features.length < PAGE) break;
-  offset += PAGE;
+  offset += features.length;
+  expectingMore = pageContinues(data, features.length, PAGE);
+  if (!expectingMore) break;
+}
+assertCount(total, expected, "ac-overland-flow-paths");
+} catch (err) {
+  await markFailed(err.message);
+  console.error(err.message);
+  process.exit(2);
+}
+
+if (!DRY) {
+  try {
+    await promoteVersion(sb, { versionId, total, expected, label: "ac-overland-flow-paths" });
+  } catch (err) {
+    await markFailed(err.message);
+    console.error(err.message);
+    process.exit(3);
+  }
 }
 
 console.log(`Done. Total flow path features: ${total}${DRY ? " (dry-run, not inserted)" : ""}`);

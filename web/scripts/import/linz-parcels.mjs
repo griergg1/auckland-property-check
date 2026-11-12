@@ -7,6 +7,7 @@
 // Requires: LINZ_API_KEY, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY in env.
 import "dotenv/config";
 import ws from "ws";
+import { assertCount, assertNotShortPage, pageContinues, promoteVersion } from "./lib/finish-import.mjs";
 
 const LINZ_KEY = process.env.LINZ_API_KEY;
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -55,15 +56,24 @@ async function ensureDataset() {
     attribution: "Contains data sourced from the LINZ Data Service and licensed for reuse under CC BY 4.0.",
     enabled: true,
   }).select("slug");
-  const { data: v } = await sb.from("dataset_versions").insert({
+  const { data: v, error } = await sb.from("dataset_versions").insert({
     dataset_slug: "linz-nz-primary-parcels",
     version_label: new Date().toISOString().slice(0, 10),
     source_publication_date: new Date().toISOString().slice(0, 10),
-    geom_validated: true,
-    status: "active",
+    geom_validated: false,
+    status: "draft",
     notes: "Auckland clip import",
   }).select("id").single();
+  if (error || !v) throw new Error(error?.message ?? "could not create dataset version");
   return v.id;
+}
+
+async function markFailed(message) {
+  if (DRY || !versionId) return;
+  await sb.from("dataset_versions").update({
+    status: "failed",
+    notes: String(message).slice(0, 500),
+  }).eq("id", versionId);
 }
 
 function toWkt(geom) {
@@ -76,11 +86,16 @@ function toWkt(geom) {
 let total = 0;
 let startIndex = 0;
 let versionId = null;
+let expected = null;
 if (!DRY) versionId = await ensureDataset();
 
+try {
+let expectingMore = false;
 while (true) {
   const data = await fetchPage(startIndex);
+  if (expected == null && data.numberMatched != null) expected = Number(data.numberMatched);
   const features = data.features ?? [];
+  assertNotShortPage(features, expectingMore, startIndex);
   if (features.length === 0) break;
   if (DRY) {
     total += features.length;
@@ -104,8 +119,25 @@ while (true) {
     total += rows.length;
   }
   console.log(`Imported/seen ${total} parcels...`);
-  if (features.length < PAGE) break;
+  expectingMore = pageContinues(data, features.length, PAGE);
+  if (!expectingMore) break;
   startIndex += PAGE;
+}
+assertCount(total, expected, "linz-nz-primary-parcels");
+} catch (err) {
+  await markFailed(err.message);
+  console.error(err.message);
+  process.exit(2);
+}
+
+if (!DRY) {
+  try {
+    await promoteVersion(sb, { versionId, total, expected, label: "linz-nz-primary-parcels" });
+  } catch (err) {
+    await markFailed(err.message);
+    console.error(err.message);
+    process.exit(3);
+  }
 }
 
 console.log(`Done. Total parcels: ${total}${DRY ? " (dry-run, not inserted)" : ""}`);
