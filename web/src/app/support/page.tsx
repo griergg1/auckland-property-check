@@ -11,11 +11,11 @@ export const metadata: Metadata = {
 const FAQ = [
   {
     q: "What does the report cover?",
-    a: "The council rating valuation and annual rates; the school enrolment home zones; three flood and coastal checks (overland flow paths, flood-prone areas, coastal storm-tide); large-scale landslide susceptibility; the Unitary Plan zone for the property; and the operative Unitary Plan overlays (historic heritage extent of place, significant ecological areas, regionally significant volcanic viewshafts and height sensitive areas, special character areas). Each finding is matched to the actual property, comes back as yes / no / we couldn't tell / needs a human, and links to the source and the date we pulled it.",
+    a: "The council rating valuation and annual rates; the school enrolment home zones; overland flow paths, flood-prone areas, and coastal storm-tide; the council's coastal erosion forecast lines (2050, 2080, and 2130); large-scale landslide susceptibility; the Unitary Plan zone for the property; and the operative Unitary Plan overlays (historic heritage extent of place, significant ecological areas, regionally significant volcanic viewshafts and height sensitive areas, special character areas). Each finding is matched to the actual property, comes back as yes / no / we couldn't tell / needs a human, and links to the source and the date we pulled it. The erosion check is the forecast line, not a filled area: a section between today's coast and that line can still be inside the forecast even when the line does not cross it.",
   },
   {
     q: "What does the report NOT cover?",
-    a: "Unitary Plan precincts and designations; coastal erosion; tsunami zones; detailed slope / earthworks analysis; stormwater and drainage detail; title restrictions (covenants, easements); consent history; and sea-level-rise coastal scenarios. These are on the to-do list; until a layer is pulled and checked, it's not on the report.",
+    a: "Unitary Plan precincts and designations; detailed slope / earthworks analysis; stormwater and drainage detail; title restrictions (covenants, easements); consent history; and sea-level-rise versions of the coastal flood map. Tsunami evacuation zones are not included.",
   },
   {
     q: "How current is the data?",

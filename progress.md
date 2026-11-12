@@ -130,6 +130,26 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-12 — Buyer choices, then coastal erosion
+
+**Goal:** Keep only the choices a buyer of a house or an empty section needs, then add coastal erosion.
+
+**Done:**
+- Removed renovate, extend, and add-a-dwelling from the confirm page and the report. The report no longer has buttons that only reordered findings. A buyer chooses "A house" or "An empty section." Questions follow that purchase.
+- Coastal erosion is live. Auckland Council's regional ASCIE forecast lines (2050, 2080, 2130, and 2130 with higher sea-level rise), 4,862 lines that have a shape. The geometry is the inland edge of the forecast, drawn as a line, not a filled area. The check names the soonest line that crosses the section. Empty shapes in the feed were skipped.
+- 119 Waitea Road, Muriwai Beach: the lines do not cross the section. The nearest 2050 line is about 210 m toward the beach. Overland flow still nicks the north boundary (about 4 m). Capital value $700,000, all land value, no floor area.
+
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (7/7 with network) / manual ✅ (Waitea report shows the erosion finding as not on the section; a known parcel the line crosses returns detected for 2050) / CodeRabbit ✅ (4 major findings, none changed the code — see notes) / secrets not in git ✅ / pushed ✅
+
+**Next:** Natural Hazards Commission map of past landslide claims, the last hazard. Then the neighbourhood pieces: parks, coast, bus and train stops, shops. Tsunami evacuation zones are not on the list.
+
+**Notes:**
+- CodeRabbit asked whether a line crossing still counts. It does: the overlap test is "crosses into the parcel," and a real parcel the 2050 line crosses comes back detected.
+- OBJECTIDs do not collide across the four erosion layers in this import, so the stored ids are unique.
+- The erosion check is already called from the assessment runner. The Waitea run returned it.
+- CodeRabbit asked to put renovation questions back on the house-buyer path. That was declined. Those questions were the filler this session removed.
+- Some empty ASCIE features have no geometry. The importer keeps only rows with a shape length, so the published count matches what was stored.
+
 ## 2026-11-12 — Importer hygiene
 
 **Goal:** Stop a bad map download from replacing a good one, and stop a hazard that only touches a boundary from counting as "on the property".
@@ -512,7 +532,7 @@ Use plan todos for detail; this is a short pointer list.
 - [x] Coastal inundation / storm-tide — completes the flood/hazard trio. AC Flood Viewer, same ArcGIS hub as overland flow. CC BY 4.0.
 - [x] **Landslide susceptibility** — Auckland Council Large Scale Landslide Susceptibility (Level A, 2025), 86,475 polygons imported. The shallow susceptibility layer (4.9 M grid cells) is deliberately excluded as unsuitable for bulk import.
 - [x] **AUP overlays** — historic heritage extent of place, significant ecological areas, volcanic viewshafts / height sensitive areas, and special character areas (5,866 operative polygons imported). Precincts and designations remain future scope.
-- [ ] Coastal erosion — AC GeoMaps. Medium relevance; pairs with coastal inundation.
+- [x] Coastal erosion — Auckland Council ASCIE Level A forecast lines (2050, 2080, 2130, 2130+), 4,862 lines with a shape. The published geometry is the inland edge of the forecast, not a filled area. Tsunami evacuation zones are not being added. NHCover past landslide claims is the last hazard after this, then the neighbourhood pieces.
 - [ ] Tsunami zones — AC Hazard Viewer. Medium; coastal evacuation.
 - [ ] NHCover landslide claims history — free NHC claims map; evidence of past events, complements landslide susceptibility.
 

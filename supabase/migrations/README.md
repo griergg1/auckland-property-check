@@ -17,6 +17,8 @@ checked-in SQL:
 | `20261112000005_fix_licence_url_hyphenated_for_wave2_datasets.sql` | Point the two Wave 2 dataset rows at the hyphenated Auckland Council open-data licence URL. |
 | `20261112000006_assessment_run_address_label.sql` | Store the searched address on `assessment_runs` so the report can name the property. Applied on the live project. |
 | `20261112000007_import_hygiene.sql` | Promote a dataset version in one transaction after an `ST_IsValid` check, and count a hazard only when it crosses into the parcel. Applied on the live project. |
+| `20261112000008_buyer_questions.sql` | Questions for buying a house or buying an empty section. Renovate and extend are no longer separate questions. |
+| `20261112000009_assess_coastal_erosion.sql` | Coastal erosion forecast lines, and the buyer question when that line crosses a section. The promote step only validates the new version's shapes. Applied on the live project. |
 
 These files are **not** a bootstrap set for a fresh project. The baseline schema
 (`public.parcels`, `public.hazard_features`, `public.dataset_versions`,

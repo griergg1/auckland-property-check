@@ -14,11 +14,8 @@ type ParcelCandidate = {
 };
 
 const INTENTIONS: { value: string; label: string }[] = [
-  { value: "live", label: "Live there" },
-  { value: "renovate", label: "Renovate" },
-  { value: "extend", label: "Extend" },
-  { value: "add_dwelling", label: "Add a dwelling" },
-  { value: "vacant_build", label: "Build on vacant land" },
+  { value: "live", label: "A house" },
+  { value: "vacant_build", label: "An empty section" },
 ];
 
 export default function ConfirmPage() {
@@ -191,9 +188,9 @@ function ConfirmContent() {
 
             {/* right: intention + action */}
             <div className="p-5">
-              <p className="label">Your intention</p>
+              <p className="label">What are you buying?</p>
               <p className="mt-2 text-[0.9rem] text-ink-muted">
-                Findings will be ordered by what you plan to do.
+                The maps stay the same. This chooses the questions you take with you before you offer.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {INTENTIONS.map((it) => {

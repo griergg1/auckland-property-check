@@ -54,6 +54,7 @@ const ALLOWED_SOURCE_HOSTS = [
   "educationcounts.govt.nz",
   "arcgis.com",
   "linz.govt.nz",
+  "knowledgeauckland.org.nz",
 ];
 
 export function sanitizeSourceUrl(raw: string | null | undefined): string | undefined {
@@ -104,6 +105,7 @@ type CheckSpec = {
     | "assess_overland_flow"
     | "assess_flood_prone"
     | "assess_coastal_inundation"
+    | "assess_coastal_erosion"
     | "assess_landslide_susceptibility"
     | "assess_unitary_plan_zone"
     | "assess_unitary_plan_overlays"
@@ -119,6 +121,7 @@ export const CHECK_SPECS: readonly CheckSpec[] = [
   { fn: "assess_overland_flow", checkId: "hazard.overland_flow", title: "Overland flow path check" },
   { fn: "assess_flood_prone", checkId: "hazard.flood_prone", title: "Flood prone area check" },
   { fn: "assess_coastal_inundation", checkId: "hazard.coastal_inundation", title: "Coastal inundation check" },
+  { fn: "assess_coastal_erosion", checkId: "hazard.coastal_erosion", title: "Coastal erosion check" },
   { fn: "assess_landslide_susceptibility", checkId: "hazard.landslide_susceptibility", title: "Landslide susceptibility check" },
   { fn: "assess_unitary_plan_zone", checkId: "planning.zone", title: "Unitary Plan zone check" },
   { fn: "assess_unitary_plan_overlays", checkId: "planning.overlays", title: "Unitary Plan overlay check" },
@@ -184,7 +187,7 @@ export async function runRatingValuationCheck(
     featureIds: [],
     evidenceGeometry: null,
     retrievalDate,
-    intentions: ["live", "renovate", "extend", "add_dwelling", "vacant_build"],
+    intentions: ["live", "vacant_build"],
   };
 
   let rv: RatingValuation | null = null;

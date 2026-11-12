@@ -32,7 +32,8 @@ export function FooterDisclaimer() {
       pulled live from Auckland Council&apos;s public rates search (a
       public per-property API, not an open-licensed feed). Not a LIM, not
       ownership confirmation, not a promise you&apos;ll get consent.
-      Rating valuation, school zones, flood, coastal, landslide
+      Rating valuation, school zones, flood, coastal storm-tide, the
+      coastal erosion forecast line, landslide
       susceptibility, the Unitary Plan zone, and four Unitary Plan overlay
       groups (historic heritage extent of place, significant ecological
       areas, volcanic viewshafts and height sensitive areas, special

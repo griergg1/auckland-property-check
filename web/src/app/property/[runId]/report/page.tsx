@@ -6,13 +6,10 @@ import { SiteHeader, SiteFooter, StatusStamp } from "@/components/SiteChrome";
 import { ReportSheet, schoolNames, shortZone } from "@/components/ReportSheet";
 import type { Finding } from "@/lib/schemas";
 
-const INTENTIONS: { value: string; label: string }[] = [
-  { value: "live", label: "Live there" },
-  { value: "renovate", label: "Renovate" },
-  { value: "extend", label: "Extend" },
-  { value: "add_dwelling", label: "Add a dwelling" },
-  { value: "vacant_build", label: "Build on vacant land" },
-];
+function purchaseLabel(intention: string): string {
+  if (intention === "vacant_build") return "someone buying an empty section to build on";
+  return "someone buying a house";
+}
 
 export default function ReportPage() {
   return (
@@ -82,13 +79,6 @@ function ReportContent() {
   const rvFinding = findings.find((f) => f.checkId === "value.rating_valuation");
   const listFindings = findings.filter((f) => f.checkId !== "value.rating_valuation");
 
-  // simple intention-aware ordering: findings that mention the intention first
-  const ordered = [...listFindings].sort((a, b) => {
-    const ai = a.intentions?.includes(intention) ? 0 : 1;
-    const bi = b.intentions?.includes(intention) ? 0 : 1;
-    return ai - bi;
-  });
-
   // The confirm page runs one parcel. The sheet shows that parcel.
   const parcel = parcels[0];
   const zoneFinding = findings.find((f) => f.checkId === "planning.zone" && f.status === "detected");
@@ -113,6 +103,18 @@ function ReportContent() {
           ? { text: "Flood · not on the map", tone: "off" }
           : { text: "Flood · not fully checked", tone: "quiet" },
     );
+  }
+  const erosion = findings.find((f) => f.checkId === "hazard.coastal_erosion");
+  if (erosion) {
+    const label = erosion.status === "detected"
+      ? erosion.title.replace(/^Coastal erosion forecast:\s*/i, "Erosion · ")
+      : erosion.status === "not_detected"
+        ? "Erosion · line not on section"
+        : "Erosion · not checked";
+    stamps.push({
+      text: label,
+      tone: erosion.status === "detected" ? "on" : erosion.status === "not_detected" ? "off" : "quiet",
+    });
   }
   if (landslide) {
     const label = landslide.status === "detected"
@@ -179,30 +181,6 @@ function ReportContent() {
           />
         )}
 
-        {/* intention selector */}
-        <div className="mt-6">
-          <p className="label">Order findings by intention</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {INTENTIONS.map((it) => {
-              const selected = intention === it.value;
-              return (
-                <button
-                  key={it.value}
-                  type="button"
-                  onClick={() => setIntention(it.value)}
-                  className={`label border px-3 py-2 ${
-                    selected
-                      ? "border-ink bg-ink text-paper"
-                      : "border-hairline bg-surface text-ink hover:border-ink"
-                  }`}
-                >
-                  {it.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {loading && <p className="mt-8 text-ink-muted">Loading…</p>}
         {error && <p className="mt-8 text-st-detected">{error}</p>}
 
@@ -210,7 +188,7 @@ function ReportContent() {
           <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_minmax(0,420px)]">
             {/* findings list */}
             <ul className="border border-hairline">
-              {ordered.map((f, i) => {
+              {listFindings.map((f, i) => {
                 const isOpen = expanded === f.id;
                 return (
                   <li key={f.id} className="border-b border-hairline last:border-b-0">
@@ -271,7 +249,7 @@ function ReportContent() {
                   </li>
                 );
               })}
-              {ordered.length === 0 && (
+              {listFindings.length === 0 && (
                 <li className="px-5 py-6 text-[0.9rem] text-ink-muted">No findings.</li>
               )}
             </ul>
@@ -299,9 +277,8 @@ function ReportContent() {
                 Questions for the people you&apos;ll talk to before you offer.
               </h2>
               <p className="mt-2 max-w-2xl text-[0.9rem] leading-relaxed text-ink-muted">
-                These follow from what the council and LINZ maps showed on this property, ordered
-                by the intention this report was run for ({intention === "live" ? "live there" : intention === "add_dwelling" ? "add a dwelling" : intention === "vacant_build" ? "build on vacant land" : intention}).
-                The questions don&apos;t change when you switch the intention above — only the findings reorder. Take them to the agent, the lawyer, the council, the builder, the insurer, and the bank. They are a starting list, not a substitute for professional advice.
+                These follow from what the council and LINZ maps showed on this property, written for {purchaseLabel(intention)}.
+                Take them to the agent, the lawyer, the council, and the bank before you offer. They are a starting list, not a substitute for professional advice.
               </p>
             </div>
             <div className="px-5 py-4">

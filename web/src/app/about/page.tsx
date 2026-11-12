@@ -43,8 +43,8 @@ export default function AboutPage() {
         <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
           morebeanz reads the council&apos;s own flood, coastal, and zoning maps for an
           Auckland section, and tells you what they mean for what you want to do
-          with the place — live in it, renovate, extend, add a dwelling, or build
-          on vacant land. It&apos;s preliminary research. It is not a LIM, not a
+          with the place — a house you might buy, or an empty section you might
+          build on. It&apos;s preliminary research. It is not a LIM, not a
           building inspection, and not legal advice.
         </p>
 

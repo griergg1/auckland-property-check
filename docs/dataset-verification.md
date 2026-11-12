@@ -138,6 +138,27 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Status | `verified` — endpoint, licence (CC BY 4.0), and coverage confirmed 2026-11-02. Version stays `draft` until the last page succeeds, then `active`. |
 | Notes | The 1% AEP (100-year return period, present-day sea level) is the standard planning scenario shown on the Auckland Council Flood Viewer. Sea-level-rise variants are separate FeatureServices and are out of scope for this check. The dataset maps the extent of sea-water coverage from sustained coastal storm-tide flooding (joint probability of high tide, storm surge, and wave setup); wave runup, overtopping, and freshwater flooding are not included. Used for the `hazard.coastal_inundation` check, which intersects the confirmed parcel (not the address point). |
 
+## Auckland Council — Coastal erosion forecast (ASCIE)
+
+| Field | Value |
+|-------|-------|
+| Slug | `ac-coastal-erosion` |
+| Source org | Auckland Council |
+| Layer | Areas Susceptible to Coastal Instability and Erosion, Level A (regional) forecast lines |
+| Item ID | `5eaa62e1c2d44409b7ec86d0b2ee572f` |
+| Item URL | https://www.arcgis.com/home/item.html?id=5eaa62e1c2d44409b7ec86d0b2ee572f |
+| Data type | Line |
+| CRS | NZTM2000 (EPSG:2193) |
+| Access method | ArcGIS REST FeatureServer (no auth, open data) |
+| Endpoint | `https://services1.arcgis.com/n4yPwebTjJCmXB6W/ArcGIS/rest/services/CoastalInstabilityAndErosion/FeatureServer` |
+| Layers imported | 0 ASCIE 2050 (RCP8.5); 1 ASCIE 2080 (RCP8.5); 2 ASCIE 2130 (RCP8.5); 3 ASCIE 2130 (RCP8.5+) |
+| Licence | Auckland Council Open Data — CC BY 4.0 |
+| Attribution | "Auckland Council — Areas Susceptible to Coastal Instability and Erosion (CC BY 4.0)" |
+| Source page | https://www.knowledgeauckland.org.nz/publications/predicting-auckland-s-exposure-to-coastal-instability-and-erosion/ |
+| Status | `verified` — same open-data hub and licence as the other council hazard layers. Level B and Level C layers on this service have a single feature each and are not imported. |
+| Count | 4,862 lines with a shape (empty shapes in the feed were skipped). Imported 2026-11-12. |
+| Notes | ASCIE is the area landward of today's coastline that the council forecasts could be affected by erosion or by instability caused by erosion. The published geometry is the inland edge of that area, as a line, for 2050, 2080, and 2130 under RCP8.5. The check reports the soonest line that crosses the parcel. A parcel between the present coast and the line is not flagged when the line itself does not cross it. Used for `hazard.coastal_erosion`. |
+
 ## Auckland Council — Rating Valuation & Council Rates (per-property API)
 
 | Field | Value |

@@ -8,6 +8,8 @@ export const FindingStatus = z.enum([
 ]);
 export type FindingStatus = z.infer<typeof FindingStatus>;
 
+// Older runs may still store renovate, extend, or add_dwelling.
+// The product only asks a buyer to choose a house or an empty section.
 export const BuyerIntention = z.enum([
   "live",
   "renovate",

@@ -34,7 +34,7 @@ export default function ContactPage() {
             <li>— The Auckland address you ran (or tried to run).</li>
             <li>— What you expected to see, and what you saw instead.</li>
             <li>— The run id from the report page, if you have one.</li>
-            <li>— Which one you picked: live there, renovate, extend, add a dwelling, or build on vacant land.</li>
+            <li>— Whether you were buying a house or an empty section.</li>
           </ul>
         </section>
 

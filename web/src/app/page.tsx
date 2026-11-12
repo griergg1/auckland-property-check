@@ -23,7 +23,7 @@ const CHECKS = [
   {
     label: "Live now",
     title: "Flood, coastal & land stability",
-    body: "Council flood maps — overland flow paths, flood-prone areas, and coastal storm-tide — plus Auckland Council's large-scale landslide susceptibility mapping, matched to your property.",
+    body: "Council flood maps — overland flow paths, flood-prone areas, and coastal storm-tide — plus the coastal erosion forecast line and large-scale landslide susceptibility, matched to your property.",
     plate: FloodPlate,
   },
   {
@@ -36,29 +36,14 @@ const CHECKS = [
 
 const AUDIENCES = [
   {
-    label: "First-home buyer",
-    title: "What's it worth, and what are the schools?",
-    body: "The council rating valuation, the annual rates, and the school enrolment zones come first — the value and the neighbourhood, not just the flood lines.",
+    label: "Buying a house",
+    title: "What is it worth, and what is on the land?",
+    body: "The council valuation, the rates, the schools, and the flood and landslide maps, before you pay for a LIM.",
   },
   {
-    label: "Renovator",
-    title: "Can I alter, and what are the limits?",
-    body: "The zone check names what's permitted on the property and links to the rule chapter. Unitary Plan overlays are included; precincts and designations are still being added.",
-  },
-  {
-    label: "Extender",
-    title: "Where on the property can I build out?",
-    body: "Flood paths and ponding areas are matched to the property, so the extension's position and drainage questions are concrete, not a guess.",
-  },
-  {
-    label: "Adding a dwelling",
-    title: "Is a second dwelling allowed?",
-    body: "The zone check links to the chapter that sets dwelling density. The flood findings come first, because they shape where a second unit can sit.",
-  },
-  {
-    label: "Building on vacant land",
-    title: "What does the land itself show?",
-    body: "Flood, ponding, coastal storm-tide, and large-scale landslide susceptibility are live today. Slope detail is still coming — until then it reads as \"we couldn't check\", not \"it's flat\".",
+    label: "Buying a section",
+    title: "Can you build on it?",
+    body: "The same maps, with questions about a new house: the zone, consents, and whether the land is mapped for flooding or landslides.",
   },
 ];
 
@@ -70,8 +55,8 @@ const DIFFERENTIATORS = [
   },
   {
     n: "02",
-    title: "Ordered for what you're actually doing.",
-    body: "Renovating, extending, adding a dwelling, or building on vacant land — the check that matters most to that decision comes first. You don't wade through someone else's checklist.",
+    title: "Written for the purchase, not a renovation.",
+    body: "You are buying a house or an empty section. The questions follow that. They do not pretend a kitchen renovation is a different map.",
   },
   {
     n: "03",
@@ -192,8 +177,8 @@ export default function SearchPage() {
               the council and LINZ know about it — the rating valuation and annual
               rates, the school enrolment zones, the flood and coastal maps, and
               what you can build — in plain English, with the source link next to
-              every line. Built for first-home buyers, renovators, extenders, and
-              people adding a dwelling. Free to use. Not a LIM.
+              every line. For someone buying a house, or an empty section to build on.
+              Free to use. Not a LIM.
             </p>
 
             <form onSubmit={search} className="mt-8 max-w-md">
@@ -265,26 +250,21 @@ export default function SearchPage() {
             Built around what you plan to do with the place.
           </h2>
           <p className="mt-4 max-w-2xl text-[0.95rem] leading-relaxed text-ink-muted">
-            The report puts the check that matters most to your decision first —
-            the value and rates for a buyer, the zone for a renovator, the flood
-            lines for an extender. Pick the one that sounds like you.
+            One check for a house you might buy. One check for a section you might
+            build on. The maps are the same. The questions are not.
           </p>
-          <ul className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-10 grid grid-cols-1 border border-hairline sm:grid-cols-3">
             {AUDIENCES.map((a, i) => (
               <li
                 key={a.label}
-                className={`border-hairline p-6 ${
-                  i % 3 !== 0 ? "lg:border-l" : ""
-                } ${i % 2 !== 0 ? "sm:border-l lg:border-l-0" : ""} ${
-                  i >= 1 ? "border-t sm:border-t-0" : ""
-                } ${i >= 2 ? "lg:border-t" : ""} ${i >= 3 ? "sm:border-t lg:border-t-0" : ""} ${i >= 4 ? "lg:border-t" : ""}`}
+                className={`border-hairline p-6 ${i > 0 ? "border-t sm:border-t-0 sm:border-l" : ""}`}
               >
                 <p className="label">{a.label}</p>
                 <h3 className="display mt-3 text-[1.1rem]">{a.title}</h3>
                 <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">{a.body}</p>
               </li>
             ))}
-            <li className="border-hairline p-6 lg:border-l lg:border-t">
+            <li className="border-hairline border-t p-6 sm:border-t-0 sm:border-l">
               <p className="label">Not for</p>
               <h3 className="display mt-3 text-[1.1rem]">Apartments &amp; cross-leases</h3>
               <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-muted">

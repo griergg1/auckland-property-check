@@ -53,6 +53,7 @@ describe("runChecksForParcel (unit, mocked)", () => {
     "hazard.overland_flow",
     "hazard.flood_prone",
     "hazard.coastal_inundation",
+    "hazard.coastal_erosion",
     "hazard.landslide_susceptibility",
     "planning.zone",
     "planning.overlays",
