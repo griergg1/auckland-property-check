@@ -183,6 +183,52 @@ Each layer must have a row here **before** it is enabled in the app. Public visi
 | Status | `verified` — endpoint, licence (CC BY 3.0 NZ, Crown copyright), and coverage confirmed 2026-11-02. Imported 1,325 national polygons; version stayed `draft` until the last page succeeded, then `active`. |
 | Notes | The Living Atlas layer is generalised by Eagle Technology for web display and does not fully represent the official boundaries; fine for parcel-centroid point-in-polygon. Where the map and the written zone description conflict, the written description prevails. The Equity Index (the 2023+ replacement for the old decile) is not yet joined — the layer has `School_ID` (joinable to the MoE schools directory / EQI Excel) but the directory fetch is a follow-up. Used for the `neighbourhood.school_zones` check, which intersects the confirmed parcel centroid (ST_Contains) against the imported polygons. |
 
+## Auckland Council — Landslide Susceptibility (Large Scale)
+
+| Field | Value |
+|-------|-------|
+| Slug | `ac-landslide-susceptibility` |
+| Source org | Auckland Council |
+| Layer | Large Scale Landslide Susceptibility (Level A, 2025) |
+| Item ID | `0d83cc4836f04620b77c31e802114288` |
+| Data type | Polygon (MultiPolygon) |
+| CRS | NZTM2000 (EPSG:2193) |
+| Access method | ArcGIS REST FeatureServer (no auth, open data) |
+| Endpoint | `https://services1.arcgis.com/n4yPwebTjJCmXB6W/ArcGIS/rest/services/Large_Scale_Landslide_Susceptibility/FeatureServer/0` |
+| Query example | `.../FeatureServer/0/query?where=1=1&outFields=OBJECTID,Confidence,SusceptibilityCode,SusceptibilityValue,Shape__Area,Shape__Length&outSR=2193&returnGeometry=true&orderByFields=OBJECTID&f=geojson&resultRecordCount=1000` |
+| Max record count | 2000 per request; imported at 1000 per request |
+| Fields | `OBJECTID`, `SUAspect`, `AspectDirection`, `SUSlope`, `SlopeType`, `PartitionedSlope`, `Relief`, `StreamOrder`, `LandslideCount`, `StructuralScore`, `SlopeScore`, `AspectScore`, `ReliefScore`, `StreamOrderScore`, `LandslideCountScore`, `GeologyScore`, `TotalScore`, `LSData`, `StructureData`, `GeologyData`, `Confidence`, `SusceptibilityCode`, `SusceptibilityValue`, `Shape__Area`, `Shape__Length` |
+| Licence | Auckland Council Open Data — CC BY 4.0 |
+| Attribution | "Auckland Council — Landslide Susceptibility (CC BY 4.0)" |
+| Source / rule page | Auckland Council Technical Report 2025/7 "Auckland Region Landslide Susceptibility Assessment" · `https://www.aucklandcouncil.govt.nz/en/plans-policies-bylaws-reports-projects/our-plans-strategies/unitary-plan/auckland-unitary-plan-modifications/material-incorporated-by-reference/technical-report-auckland-landslide-susceptibility-assessment.html` |
+| Update cadence | As updated; 2025 regional assessment |
+| Count | 86,475 polygons (queried 2026-11-12) |
+| Status | `verified` — endpoint, licence (CC BY 4.0), and coverage confirmed 2026-11-12. Imported with version `draft` → `active`. |
+| Notes | Used for the `hazard.landslide_susceptibility` check, which intersects the confirmed parcel. The shallow landslide susceptibility layer (4.9 M grid-cell polygons) is deliberately excluded from bulk import because its resolution makes it unsuitable for this database; the check is based on the regional-scale large-scale layer only. This is susceptibility mapping, not a record of past landslides or a site-specific geotechnical assessment. |
+
+## Auckland Council — Unitary Plan Overlays
+
+| Field | Value |
+|-------|-------|
+| Slug | `ac-unitary-plan-overlays` |
+| Source org | Auckland Council (Plans and Places) |
+| Layer | Unitary Plan Overlays — operative polygons for Historic Heritage (extent of place), Significant Ecological Areas, Regionally Significant Volcanic Viewshafts / Height Sensitive Areas, and Special Character Areas (Residential and Business) |
+| Item IDs | Historic Heritage Extent of Place `5af99fa3dcc04aa8a0c1dadecdd1a94e`; Significant Ecological Areas `b40f8baea5ce4e348e339a2d7d367b8b`; Volcanic Viewshafts `d2aa5fd42fd84b81b91f8a215c6190ff`; Special Character `6c404be274c94f8e972f97d585df1751` |
+| Data type | Polygon (MultiPolygon) |
+| CRS | NZTM2000 (EPSG:2193) |
+| Access method | ArcGIS REST FeatureServer (no auth, open data) |
+| Endpoints | `https://services1.arcgis.com/n4yPwebTjJCmXB6W/ArcGIS/rest/services/Historic_Heritage_Overlay_Extent_of_Place/FeatureServer/0` · `Significant_Ecological_Areas_Overlay/FeatureServer/0` · `Regionally_Significant_Volcanic_Viewshafts_And_Height_Sensitive_Areas_Overlay/FeatureServer/0` · `Special_Character_Areas_Overlay_Residential_and_Business/FeatureServer/0` |
+| Query example | `.../FeatureServer/0/query?where=VERSIONSTATUS%3D4&outFields=OBJECTID,TYPE,SUBTYPE,SCHEDULE,NAME,VALIDATIONSTATE,VERSIONSTATUS,DocumentURL,GlobalID,Shape__Area,Shape__Length&outSR=2193&returnGeometry=true&orderByFields=OBJECTID&f=geojson&resultRecordCount=100` |
+| Max record count | 2000 per request; imported at 100 per request (first attempt at 2000 timed out; 100 succeeded) |
+| Fields | `OBJECTID`, `TYPE`, `SUBTYPE`, `SCHEDULE`, `NAME`, `VALIDATIONSTATE`, `VERSIONSTATUS`, `DocumentURL`, `GlobalID`, `Shape__Area`, `Shape__Length` |
+| Licence | Auckland Council Open Data — CC BY 4.0 |
+| Attribution | "Auckland Council — Unitary Plan Overlays (CC BY 4.0)" |
+| Source / rule page | Auckland Unitary Plan ePlan — `https://unitaryplan.aucklandcouncil.govt.nz/` |
+| Update cadence | As updated; the ePlan viewer is the live text source |
+| Count | ~5,866 operative polygons combined (Historic Heritage ~1,961; SEA ~3,643; Volcanic Viewshafts ~110; Special Character ~152) (queried 2026-11-12) |
+| Status | `verified` — endpoint, licence (CC BY 4.0), and coverage confirmed 2026-11-12. Imported with version `draft` → `active`. |
+| Notes | Imported only operative records (`VERSIONSTATUS=4`) so the check reflects the current overlay, not a proposed or decision version. Historic heritage uses the extent-of-place polygon layer, not the place-point layer. Used for the `planning.overlays` check, which intersects the confirmed parcel. |
+
 ---
 
 ## Import plan (PoC → MVP)

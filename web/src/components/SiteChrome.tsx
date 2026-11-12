@@ -21,6 +21,27 @@ const NAV_LINKS = [
   { href: "/contact", label: "Contact" },
 ];
 
+/* Shared footer disclaimer — used by both SiteFooter and the home page footer.
+ * Keep the wording in one place so the home page and every other page stay in sync.
+ */
+export function FooterDisclaimer() {
+  return (
+    <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
+      Council map data, pulled straight from the Auckland Council and LINZ
+      data hubs under a free-to-reuse licence. The rating valuation is
+      pulled live from Auckland Council&apos;s public rates search (a
+      public per-property API, not an open-licensed feed). Not a LIM, not
+      ownership confirmation, not a promise you&apos;ll get consent.
+      Rating valuation, school zones, flood, coastal, landslide
+      susceptibility, the Unitary Plan zone, and four Unitary Plan overlay
+      groups (historic heritage extent of place, significant ecological
+      areas, volcanic viewshafts and height sensitive areas, special
+      character) are live today; other overlays, precincts, designations
+      and more hazards are still coming.
+    </p>
+  );
+}
+
 export function SiteHeader({ active }: { active?: "home" | "shortlist" }) {
   return (
     <header className="border-b border-hairline">
@@ -68,15 +89,7 @@ export function SiteFooter() {
               <Link href="/contact" className="hover:text-ink">Contact</Link>
             </nav>
           </div>
-          <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
-            Council map data, pulled straight from the Auckland Council and LINZ
-            data hubs under a free-to-reuse licence. The rating valuation is
-            pulled live from Auckland Council&apos;s public rates search (a
-            public per-property API, not an open-licensed feed). Not a LIM, not
-            ownership confirmation, not a promise you&apos;ll get consent.
-            Rating valuation, school zones, flood, coastal, and the Unitary
-            Plan zone are live today; overlays and more hazards are still coming.
-          </p>
+          <FooterDisclaimer />
         </div>
         <hr className="rule mt-8" />
         <p className="label mt-4">© morebeanz</p>

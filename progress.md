@@ -130,6 +130,43 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 
 <!-- Sessions below -->
 
+## 2026-11-12 — Wave 2: landslide susceptibility + Unitary Plan overlays
+
+**Goal:** Add Wave 2 of the v1.5 plan — landslide susceptibility (Wave 2.1) and Unitary Plan overlays (Wave 2.2) — then review.
+
+**Done:**
+- **Wave 2.1 — Landslide susceptibility (large scale only).** Located Auckland Council's Large Scale Landslide Susceptibility layer on the same open-data hub as the flood layers (ArcGIS item `0d83cc4836f04620b77c31e802114288`, CC BY 4.0). The shallow susceptibility layer was deliberately excluded: it is a 4.9 M grid-cell polygon layer and is not suitable for bulk import into this database. Wrote `web/scripts/import/auckland-council-landslide-susceptibility.mjs` with the same import hardening as the other hazard layers. Created `assess_landslide_susceptibility` SQL function and wired it into `runChecksForParcel` as the fourth hazard finding. The finding ranks the highest susceptibility category found on the parcel (Very High / High / Moderate / Low / Very Low), includes honest limitations about regional-scale mapping, and names the shallow layer as excluded.
+- **Wave 2.2 — Unitary Plan overlays.** Located FeatureServer endpoints for four operative overlay layers: Historic Heritage Extent of Place, Significant Ecological Areas, Regionally Significant Volcanic Viewshafts / Height Sensitive Areas, and Special Character Areas (Residential and Business). Wrote `web/scripts/import/auckland-council-unitary-plan-overlays.mjs` (imported 5,866 operative polygons; VERSIONSTATUS=4 filter). Created `assess_unitary_plan_overlays` SQL function and wired it into `runChecksForParcel` after the base zone. The finding lists each overlay type that applies to the parcel.
+- **Updated the what-to-ask layer.** Replaced the old "overlays not yet checked" planner question with two new rules: one for `planning.overlays` detected (what do they mean for the proposed work?) and one for `planning.overlays` not_detected (confirm other overlays/precincts/designations).
+- **Updated copy to mark the new checks live.** `web/src/app/page.tsx` home-page "What we check" cards, audience cards, worked example, and footer now mention landslide susceptibility and Unitary Plan overlays. `web/src/components/SiteChrome.tsx` footer updated.
+- **Recorded both layers in `docs/dataset-verification.md`** with endpoints, item IDs, field lists, counts, licences, and the shallow-layer exclusion note.
+- **Improved `insert_hazard_geojson` bulk insert performance.** Rewrote the PL/pgSQL function from a row-by-row loop to a set-based `INSERT ... SELECT jsonb_array_elements(...)` so larger page sizes do not hit the Postgres statement timeout.
+
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (7/7 pass with network; same failure-under-sandbox-block mode as before) / build ✅ (Next.js production build) / manual SQL ✅ (`assess_unitary_plan_overlays` returns `detected` for a parcel in a historic-heritage/special-character area and `not_detected` for 17 Shanaway Rise) / imports active in Supabase ✅ (landslide 86,475 rows active; overlays 5,866 rows active) / overlays dry-run end-to-end ✅ (all four layer samples print; 5,866 features; zero unmapped TYPE warnings) / CodeRabbit ✅ (15 findings; 3 fixed, 12 deferred — see notes) / pushed ✅ / secrets not in git ✅
+
+**Next:** Golden-address mobile pass (Wave 2 copy at 390px) + the import-hardening hygiene pass that CodeRabbit flagged across every importer (atomic promote+retire, ST_IsValid pre-check, guard against premature empty-page promotion, positive-area intersection in assess_* RPCs). Then v1.5 Wave 3 — coastal erosion, or product work (PDF paywall, shortlist, mortgage calculator).
+
+**Notes:**
+- The landslide import failed twice before the bulk-insert optimisation: first at ~19 k with PAGE=500 (statement timeout on the row-by-row RPC), then at 30 k with PAGE=1000 after the bulk RPC was deployed (a transient fetch error). The failed versions and their partial rows were cleaned up before the retry; the third run completed and is the active 86,475-row version.
+- The overlays import completed on the first successful run with PAGE=100 after the initial PAGE=2000 attempt timed out; 5,866 operative polygons are active. PAGE is now pinned to 100 in the script with a comment; the earlier PAGE=1000 attempt was never run against overlays.
+- **Code review fixes applied this session:**
+  - Overlays importer `PAGE=100` with explanatory comment; `orderByFields=OBJECTID` + retry-with-backoff + AbortController timeout on both new scripts; hyphenated licence URL (`user-licence-auckland-council-open-data.html`) in script source and in production `datasets.licence_url` via `20261112000005_fix_licence_url_hyphenated_for_wave2_datasets.sql`.
+  - Overlay TYPE decoding switched from three hardcoded maps (SEA_TYPES, VOLCANIC_TYPES, SPECIAL_CHARACTER_TYPES) to the layer's own coded-value domain read from `?f=json` at import time; unknown codes fall back to no type name (never a raw number) and the import warns.
+  - `--dry-run` sample now uses `layerTotal` so each of the four layers prints a sample.
+  - `assessment.ts` refactored into `CHECK_SPECS` table-driven runner using `Promise.all` — 7 RPCs run in parallel per parcel; the POST `/api/assessment/run` route also parallelises across parcels. `runCheck` no longer leaks `error.message` into `limitations` — logs server-side and surfaces a fixed user-safe string. New `sanitizeSourceUrl` rejects anything that isn't `https:` on an Auckland Council / LINZ / arcgis / Education Counts host; applied on both the POST write path and the GET read path (defence in depth).
+  - Three new mocked Vitest tests cover `CHECK_SPECS` order, that `runChecksForParcel` returns the 7 expected check IDs in order, and that an RPC error never leaks into `limitations`.
+  - Home page landslide copy now truthful (Low category, not "not on the map"); "are now included" trimmed to "included"; footer disclaimer extracted to shared `FooterDisclaimer` component in `SiteChrome.tsx` (one source of truth); footer wording now names the four overlay groups so it doesn't imply full Unitary Plan overlay coverage.
+  - Support FAQ "Four things today" / "does NOT cover" rewritten to match what the report actually returns (seven live checks; precincts, designations, coastal erosion, tsunami, slope, stormwater, title, consent history, SLR are the real outstanding items).
+  - Progress log deduplicated (coastal erosion line) and the Wave 2 session note no longer claims "pushed ✅" while the tree was uncommitted or "Next: run the landslide import" while the import was already active.
+  - SQL now checked in under `supabase/migrations/` (bulk `insert_hazard_geojson` rewrite, both Wave 2 `assess_*` RPCs, `generate_questions` additions, the licence-url fix) with a README that names the baseline-schema caveat.
+- **CodeRabbit deferred (hygiene pass across all importers, not a Wave 2 regression):**
+  - Atomic promote+retire of `dataset_versions` in one transaction (every existing importer uses two separate updates).
+  - Pre-promotion `ST_IsValid` check on every stored geometry (no importer does this today).
+  - Guard against a premature empty page promoting a partial import (every importer treats an empty page as "last page").
+  - Positive-area intersection predicate (not bare `ST_Intersects`) in every `assess_*` RPC; current behaviour matches pre-Wave 2 RPCs.
+  - Minor copy edge cases in `generate_questions` and `assess_landslide_susceptibility` (null `SusceptibilityValue` on an intersecting feature — doesn't occur in current data).
+- **CodeRabbit verified as a non-issue:** `insert_hazard_geojson` SRID handling (explicit `ST_SetSRID(..., 2193)` matches the `outSR=2193` request); `overlay_label` CASE has a null-safe `coalesce` fallback and the importer always sets `attributes.overlay` from the `LAYERS` config.
+
 ## 2026-11-02 — Home page: harbour palette, logo, real Shanaway parcel
 
 **Goal:** Make the home page look like a New Zealand property tool, put the artwork logo on the site, and show the real 17 Shanaway Rise boundary instead of a drawn blob.
@@ -182,6 +219,39 @@ Do this before closing the laptop. **Do not skip** because “it’s small.”
 - Minor, fixed: the what-to-ask section copy now clarifies that the questions are fetched for the run's original intention and do not reorder when the reader switches the intention above (only the findings reorder).
 - Major, fixed: added a clarifying comment on the report page that the run creates exactly one RV finding per run (keyed by address, not parcel), so the header keeps the first and the list excludes all RV; multi-parcel RV is not built and would need a header update if ever added.
 - Major, deferred: keep the AC rates check disabled while its dataset row is `access-check`. The check is live on the strength of the council's own public API for its own public tool (with 7-day cache, rate-limited per-run usage); a formal terms review to promote the row to `verified` is a follow-up, not a blocker for v1.5 Wave 1.
+
+---
+
+## 2026-11-12 — v1.5 Wave 2 — landslide susceptibility + Unitary Plan overlays
+
+**Goal:** Complete the two hazard/planning checks planned for v1.5 Wave 2: Auckland Council Large Scale Landslide Susceptibility and the four operative Unitary Plan overlays.
+
+**Done:**
+- Located the Auckland Council Large Scale Landslide Susceptibility layer (ArcGIS item `0d83cc4836f04620b77c31e802114288`, CC BY 4.0). The companion Shallow Landslide Susceptibility layer (~4.9 M grid-cell polygons) was deliberately excluded from bulk import because its resolution is unsuitable for this database.
+- Created `web/scripts/import/auckland-council-landslide-susceptibility.mjs` following the hardened import pattern: draft version → paginated FeatureServer fetch → bulk insert via `insert_hazard_geojson` → promote to `active` only after the last page succeeds, retire prior active version, mark failed on throw.
+- Imported 86,475 large-scale landslide susceptibility polygons into `public.hazard_features` under slug `ac-landslide-susceptibility`. The first attempts hit statement timeouts; fixed by rewriting `insert_hazard_geojson` from a row-by-loop to a set-based `INSERT ... SELECT jsonb_array_elements(...)` bulk insert, then raised the page size to 1000.
+- Added the `assess_landslide_susceptibility` SQL function. It intersects the confirmed parcel, returns the highest susceptibility category found (Very High / High / Moderate / Low), links to the AC technical report, and states that this is regional-scale susceptibility mapping, not a site-specific geotechnical assessment or a record of past landslides.
+- Located and imported the four operative Unitary Plan overlay layers under one slug `ac-unitary-plan-overlays`: Historic Heritage Extent of Place (~1,961), Significant Ecological Areas (~3,643), Regionally Significant Volcanic Viewshafts / Height Sensitive Areas (~110), and Special Character Areas (~152), totalling 5,866 operative polygons.
+- Created `web/scripts/import/auckland-council-unitary-plan-overlays.mjs` with layer-specific type decoding, scenario text, and the same draft → active / retire / fail hardening.
+- Added the `assess_unitary_plan_overlays` SQL function. It intersects the confirmed parcel and returns either `not_detected` (no overlays) or `detected` with a list of overlay scenarios and feature IDs; the title and explanation adapt to whether overlays apply.
+- Updated `generate_questions` so the report asks about detected overlays when they apply and confirms other layers when they don't.
+- Wired both new checks into `web/src/lib/assessment.ts`: `runChecksForParcel` now returns overland flow → flood prone → coastal inundation → landslide → Unitary Plan zone → Unitary Plan overlays → school zones.
+- Updated home-page copy (`web/src/app/page.tsx`) and `SiteChrome` footer to mark landslide susceptibility and Unitary Plan overlays as live today.
+- Updated `docs/dataset-verification.md` with ledger entries for both datasets.
+
+**Verified:** lint ✅ / typecheck ✅ / test ✅ (4 pass; live Supabase integration test passes with network) / CodeRabbit ⏳ / secrets not in git ✅ / mobile-width pass ⏳ / golden-address end-to-end ✅ / overlay-detection addresses ✅ / imports active in Supabase ✅ (landslide 86,475 rows active; overlays 5,866 rows active).
+
+**Golden-address results:**
+- 17 Shanaway Rise, Hillcrest → parcel 5169096 (687 m²) → landslide susceptibility `detected` (Low), overlays `not_detected`, zone `detected` (Residential - Mixed Housing Suburban), schools `detected` (3 zones), value/rates `detected`.
+- 15 King Edward Parade, Devonport → overlays `detected` (historic heritage + special character + volcanic viewshafts).
+- 10 Mount Eden Road, Mount Eden → overlays `detected` (multiple volcanic viewshafts).
+
+**Next:** v1.5 Wave 3 / backlog — coastal erosion or tsunami zones; or product work (PDF paywall, shortlist, mortgage calculator). Pick based on next priority.
+
+**Notes:**
+- The `insert_hazard_geojson` bulk rewrite was necessary because the 86k landslide import was timing out on the previous row-by-row PL/pgSQL loop even at page size 100. The new set-based insert inserts all rows in one statement and runs in well under the statement timeout.
+- The overlays import first attempt timed out at page size 2000 (large polygons); succeeded at page size 100. Subsequent retries with the bulk insert ran at page size 1000 successfully.
+- Several old `ac-overland-flow-paths` dataset versions remain `active` from early imports before the retire logic existed; these do not affect correctness but should be cleaned up in a hygiene pass.
 
 ---
 
@@ -400,8 +470,8 @@ Use plan todos for detail; this is a short pointer list.
 *Research: slope dropped — relevant to builders, not to buyers of existing homes. Ranked by how often buyer-facing guidance mentions each.*
 
 - [x] Coastal inundation / storm-tide — completes the flood/hazard trio. AC Flood Viewer, same ArcGIS hub as overland flow. CC BY 4.0.
-- [ ] Landslide susceptibility — post-2023-storms concern AC is pushing; newly published maps. High for Waitākere / North Shore hillsides.
-- [ ] AUP overlays — special character, historic heritage, significant ecological areas, volcanic viewshafts, precincts, designations. Extends the live zone check; same open-data hub as zones. Answers "can I demolish/alter".
+- [x] **Landslide susceptibility** — Auckland Council Large Scale Landslide Susceptibility (Level A, 2025), 86,475 polygons imported. The shallow susceptibility layer (4.9 M grid cells) is deliberately excluded as unsuitable for bulk import.
+- [x] **AUP overlays** — historic heritage extent of place, significant ecological areas, volcanic viewshafts / height sensitive areas, and special character areas (5,866 operative polygons imported). Precincts and designations remain future scope.
 - [ ] Coastal erosion — AC GeoMaps. Medium relevance; pairs with coastal inundation.
 - [ ] Tsunami zones — AC Hazard Viewer. Medium; coastal evacuation.
 - [ ] NHCover landslide claims history — free NHC claims map; evidence of past events, complements landslide susceptibility.

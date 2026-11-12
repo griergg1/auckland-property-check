@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/lib/supabase/server";
+import { sanitizeSourceUrl } from "@/lib/assessment";
 
 export async function GET(
   _request: Request,
@@ -43,7 +44,9 @@ export async function GET(
     explanation: f.explanation ?? undefined,
     limitations: f.limitations ?? undefined,
     followUpQuestions: f.follow_up_questions ?? [],
-    sourceUrl: f.source_url ?? undefined,
+    // Defence in depth: reject source_urls on this read path too, in case a bad
+    // one ever slipped past the write path or was inserted directly.
+    sourceUrl: sanitizeSourceUrl(f.source_url),
     datasetVersionId: f.dataset_version_id,
     featureIds: f.feature_ids ?? [],
     evidenceGeometry: f.evidence_geom ?? null,

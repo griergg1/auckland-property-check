@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FieldSheet, FloodPlate, SchoolPlate, ValuePlate, ZonePlate } from "@/components/HomeGraphics";
-import { Logo } from "@/components/SiteChrome";
+import { FooterDisclaimer, Logo } from "@/components/SiteChrome";
 
 type Candidate = { id: string; label: string };
 
@@ -22,14 +22,14 @@ const CHECKS = [
   },
   {
     label: "Live now",
-    title: "Flood & coastal",
-    body: "Council flood maps — overland flow paths, flood-prone areas, and coastal storm-tide — matched to your property, not the street.",
+    title: "Flood, coastal & land stability",
+    body: "Council flood maps — overland flow paths, flood-prone areas, and coastal storm-tide — plus Auckland Council's large-scale landslide susceptibility mapping, matched to your property.",
     plate: FloodPlate,
   },
   {
     label: "Live now",
     title: "What you can build",
-    body: "The Unitary Plan zone for the property, named in plain English, with a link to the exact rule chapter. Overlays and precincts are still being added.",
+    body: "The Unitary Plan zone for the property, named in plain English, with a link to the exact rule chapter. Unitary Plan overlays (historic heritage, special character, significant ecological areas, volcanic viewshafts) are included.",
     plate: ZonePlate,
   },
 ];
@@ -43,7 +43,7 @@ const AUDIENCES = [
   {
     label: "Renovator",
     title: "Can I alter, and what are the limits?",
-    body: "The zone check names what's permitted on the property and links to the rule chapter. Overlays and precincts are still being added.",
+    body: "The zone check names what's permitted on the property and links to the rule chapter. Unitary Plan overlays are included; precincts and designations are still being added.",
   },
   {
     label: "Extender",
@@ -58,7 +58,7 @@ const AUDIENCES = [
   {
     label: "Building on vacant land",
     title: "What does the land itself show?",
-    body: "Flood, ponding, and coastal storm-tide are live today. Slope is still coming — until then it reads as \"we couldn't check\", not \"it's flat\".",
+    body: "Flood, ponding, coastal storm-tide, and large-scale landslide susceptibility are live today. Slope detail is still coming — until then it reads as \"we couldn't check\", not \"it's flat\".",
   },
 ];
 
@@ -359,8 +359,8 @@ export default function SearchPage() {
               <p className="mt-2 text-[0.85rem] leading-relaxed text-ink-muted">
                 The Unitary Plan zone for this property, with a link to the exact
                 rule chapter (H4) that sets what&apos;s permitted, discretionary,
-                and non-complying here. Overlays and precincts are separate layers
-                not yet added.
+                and non-complying here. Unitary Plan overlays are included;
+                precincts and designations are still being added.
               </p>
               <span className="stamp mt-3 inline-block text-st-detected bg-st-detected-wash border-st-detected-line">
                 On the map
@@ -384,11 +384,14 @@ export default function SearchPage() {
             </div>
           </div>
           <p className="label mt-4">
-            The same run also returned flood paths, flood-prone areas, and coastal
-            storm-tide as not on this property — reported as &ldquo;not on the
-            map&rdquo;, not as &ldquo;all clear&rdquo;. If the data had been
-            missing, we&apos;d have said &ldquo;we couldn&apos;t check&rdquo;
-            instead. That&apos;s the honesty rule.
+            The same run also returned flood paths, flood-prone areas, coastal
+            storm-tide, and Unitary Plan overlays as not on this property —
+            reported as &ldquo;not on the map&rdquo;, not as &ldquo;all
+            clear&rdquo;. Large-scale landslide susceptibility came back Low —
+            the lowest mapped category on a regional-scale layer, not &ldquo;no
+            risk&rdquo;. If the data had been missing, we&apos;d have said
+            &ldquo;we couldn&apos;t check&rdquo; instead. That&apos;s the
+            honesty rule.
           </p>
         </div>
       </section>
@@ -490,16 +493,7 @@ export default function SearchPage() {
                 <Link href="/contact" className="hover:text-ink">Contact</Link>
               </nav>
             </div>
-            <p className="max-w-md text-[0.8rem] leading-relaxed text-ink-muted">
-            Council map data, pulled straight from the Auckland Council and LINZ
-            data hubs under a free-to-reuse licence. The rating valuation is
-            pulled live from Auckland Council&apos;s public rates search (a
-            public per-property API, not an open-licensed feed). Not a LIM, not
-            ownership confirmation, not a promise you&apos;ll get consent.
-            Rating valuation, school zones, flood, coastal, and the Unitary
-            Plan zone are live today; overlays and more hazards are still
-            coming.
-          </p>
+            <FooterDisclaimer />
           </div>
           <hr className="rule mt-8" />
           <p className="label mt-4">© morebeanz</p>

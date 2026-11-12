@@ -64,11 +64,17 @@ export async function POST(request: Request) {
     return { ...finding, id: inserted.id };
   }
 
-  // Run every live check for each confirmed parcel.
+  // Run every live check for every confirmed parcel in parallel.
+  // Promise.all preserves order per parcel, and the parcel iteration order
+  // matches parcelIds, so the final findings list is deterministic.
   const findings = [];
   try {
-    for (const parcelId of parcelIds) {
-      const checks = await runChecksForParcel(sb, parcelId, intention);
+    const parcelChecks = await Promise.all(
+      parcelIds.map((parcelId: string) => runChecksForParcel(sb, parcelId, intention)),
+    );
+    // Persist findings sequentially — insertion order drives the UI and keeps
+    // the DB writes simple to reason about.
+    for (const checks of parcelChecks) {
       for (const finding of checks) {
         findings.push(await persistFinding(finding));
       }

@@ -44,6 +44,36 @@ function unavailableFinding(
   };
 }
 
+// Hosts we trust to appear as a source link in a finding. A source_url that
+// comes back from an RPC and isn't https or isn't on one of these hosts is
+// dropped — never pass through `DocumentURL`-style fields straight into an href.
+const ALLOWED_SOURCE_HOSTS = [
+  "aucklandcouncil.govt.nz",
+  "unitaryplan.aucklandcouncil.govt.nz",
+  "experience.aucklandcouncil.govt.nz",
+  "educationcounts.govt.nz",
+  "arcgis.com",
+  "linz.govt.nz",
+];
+
+export function sanitizeSourceUrl(raw: string | null | undefined): string | undefined {
+  if (!raw) return undefined;
+  let u: URL;
+  try {
+    u = new URL(raw);
+  } catch {
+    return undefined;
+  }
+  if (u.protocol !== "https:") return undefined;
+  const host = u.hostname.toLowerCase();
+  const ok = ALLOWED_SOURCE_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+  if (!ok) {
+    console.warn("source_url rejected (host not on allowlist):", host);
+    return undefined;
+  }
+  return u.toString();
+}
+
 function findingFromRow(row: RawFindingRow, intention: BuyerIntention): Finding {
   return {
     id: "",
@@ -54,7 +84,7 @@ function findingFromRow(row: RawFindingRow, intention: BuyerIntention): Finding 
     explanation: row.explanation ?? undefined,
     limitations: row.limitations ?? undefined,
     followUpQuestions: row.follow_up_questions ?? [],
-    sourceUrl: row.source_url ?? undefined,
+    sourceUrl: sanitizeSourceUrl(row.source_url),
     datasetVersionId: row.dataset_version_id,
     featureIds: row.feature_ids ?? [],
     evidenceGeometry: row.evidence_geom ?? null,
@@ -63,25 +93,55 @@ function findingFromRow(row: RawFindingRow, intention: BuyerIntention): Finding 
   };
 }
 
-async function runCheck(
-  sb: SupabaseClient,
+// Fixed user-facing message when an RPC call fails. The raw error.message is
+// logged server-side only — never surfaced in the finding, since it can leak
+// upstream details (table names, SQL fragments, auth hints).
+const RPC_ERROR_LIMITATION =
+  "The check could not be completed because the data service returned an error. This has been logged for review; try again later or verify via a LIM.";
+
+type CheckSpec = {
   fn:
     | "assess_overland_flow"
     | "assess_flood_prone"
-    | "assess_unitary_plan_zone"
     | "assess_coastal_inundation"
-    | "assess_school_zones",
+    | "assess_landslide_susceptibility"
+    | "assess_unitary_plan_zone"
+    | "assess_unitary_plan_overlays"
+    | "assess_school_zones";
+  checkId: string;
+  title: string;
+};
+
+// Order here is the order findings appear on the report. The table pairs the
+// RPC function name with its check_id + fallback title so the three can't drift
+// apart (e.g. a renamed RPC without an updated check_id).
+export const CHECK_SPECS: readonly CheckSpec[] = [
+  { fn: "assess_overland_flow", checkId: "hazard.overland_flow", title: "Overland flow path check" },
+  { fn: "assess_flood_prone", checkId: "hazard.flood_prone", title: "Flood prone area check" },
+  { fn: "assess_coastal_inundation", checkId: "hazard.coastal_inundation", title: "Coastal inundation check" },
+  { fn: "assess_landslide_susceptibility", checkId: "hazard.landslide_susceptibility", title: "Landslide susceptibility check" },
+  { fn: "assess_unitary_plan_zone", checkId: "planning.zone", title: "Unitary Plan zone check" },
+  { fn: "assess_unitary_plan_overlays", checkId: "planning.overlays", title: "Unitary Plan overlay check" },
+  { fn: "assess_school_zones", checkId: "neighbourhood.school_zones", title: "School enrolment zones check" },
+] as const;
+
+async function runCheck(
+  sb: SupabaseClient,
+  spec: CheckSpec,
   parcelId: string,
   intention: BuyerIntention,
-  fallback: Finding,
 ): Promise<Finding> {
-  const { data, error } = await sb.rpc(fn, {
+  const fallback = unavailableFinding(spec.checkId, spec.title, intention, "No data returned.");
+  const { data, error } = await sb.rpc(spec.fn, {
     p_parcel_id: parcelId,
     p_intention: intention,
   });
-  if (error || !data || data.length === 0) {
-    return { ...fallback, limitations: error?.message ?? fallback.limitations };
+  if (error) {
+    // Log the raw error server-side; show a fixed user-safe message in the finding.
+    console.warn(`check ${spec.checkId} failed:`, error.message);
+    return { ...fallback, limitations: RPC_ERROR_LIMITATION };
   }
+  if (!data || data.length === 0) return fallback;
   return findingFromRow(data[0] as RawFindingRow, intention);
 }
 
@@ -90,42 +150,9 @@ export async function runChecksForParcel(
   parcelId: string,
   intention: BuyerIntention,
 ): Promise<Finding[]> {
-  const overland = await runCheck(
-    sb,
-    "assess_overland_flow",
-    parcelId,
-    intention,
-    unavailableFinding("hazard.overland_flow", "Overland flow path check", intention, "No data returned."),
-  );
-  const flood = await runCheck(
-    sb,
-    "assess_flood_prone",
-    parcelId,
-    intention,
-    unavailableFinding("hazard.flood_prone", "Flood prone area check", intention, "No data returned."),
-  );
-  const coastal = await runCheck(
-    sb,
-    "assess_coastal_inundation",
-    parcelId,
-    intention,
-    unavailableFinding("hazard.coastal_inundation", "Coastal inundation check", intention, "No data returned."),
-  );
-  const zone = await runCheck(
-    sb,
-    "assess_unitary_plan_zone",
-    parcelId,
-    intention,
-    unavailableFinding("planning.zone", "Unitary Plan zone check", intention, "No data returned."),
-  );
-  const schools = await runCheck(
-    sb,
-    "assess_school_zones",
-    parcelId,
-    intention,
-    unavailableFinding("neighbourhood.school_zones", "School enrolment zones check", intention, "No data returned."),
-  );
-  return [overland, flood, coastal, zone, schools];
+  // Run every check in parallel. Promise.all preserves result order, which
+  // matches CHECK_SPECS, which matches the order findings appear on the report.
+  return Promise.all(CHECK_SPECS.map((spec) => runCheck(sb, spec, parcelId, intention)));
 }
 
 function fmtMoney(n: number | null): string {
